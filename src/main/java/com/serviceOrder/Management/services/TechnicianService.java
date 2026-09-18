@@ -3,10 +3,12 @@ package com.serviceOrder.Management.services;
 import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Service
 public class TechnicianService {
     private final TechnicianRepository repository;
     public TechnicianService(TechnicianRepository repository) {

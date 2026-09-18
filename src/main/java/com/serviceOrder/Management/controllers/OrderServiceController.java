@@ -1,5 +1,6 @@
 package com.serviceOrder.Management.controllers;
 
+import com.serviceOrder.Management.dtos.OrderServiceCreateDTO;
 import com.serviceOrder.Management.dtos.OrderServiceDTO;
 import com.serviceOrder.Management.dtos.OrderServiceFinishDTO;
 import com.serviceOrder.Management.services.OrderServiceService;
@@ -31,11 +32,11 @@ public class OrderServiceController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderServiceDTO> create(@Valid @RequestBody OrderServiceDTO dto) {
-        OrderServiceDTO createdDTO = service.create(dto);
+    public ResponseEntity<OrderServiceDTO> create(@Valid @RequestBody OrderServiceCreateDTO dto) {
+        OrderServiceDTO createdDto = service.create(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(createdDTO.id()).toUri();
-        return ResponseEntity.created(uri).body(createdDTO);
+                .buildAndExpand(createdDto.id()).toUri();
+        return ResponseEntity.created(uri).body(createdDto);
     }
 
     @PutMapping(value = "/{id}/assign/{technicianId}")
@@ -44,7 +45,7 @@ public class OrderServiceController {
         return ResponseEntity.ok(dto);
     }
 
-    @PutMapping(value = "{id}/finish")
+    @PutMapping(value = "/{id}/finish")
     public ResponseEntity<OrderServiceDTO> finish(@PathVariable Long id, @Valid @RequestBody OrderServiceFinishDTO dto) {
         OrderServiceDTO finishedDto = service.finish(id, dto);
         return ResponseEntity.ok(finishedDto);
