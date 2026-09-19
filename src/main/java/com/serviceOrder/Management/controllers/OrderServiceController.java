@@ -1,5 +1,9 @@
 package com.serviceOrder.Management.controllers;
 
+import com.serviceOrder.Management.services.PdfReportService;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import com.serviceOrder.Management.dtos.OrderServiceCreateDTO;
 import com.serviceOrder.Management.dtos.OrderServiceDTO;
 import com.serviceOrder.Management.dtos.OrderServiceFinishDTO;
@@ -21,9 +25,11 @@ import java.util.List;
 @RequestMapping(value = "/orders")
 public class OrderServiceController {
     private final OrderServiceService service;
+    private final PdfReportService pdfReportService;
 
-    public OrderServiceController(OrderServiceService service) {
+    public OrderServiceController(OrderServiceService service, PdfReportService pdfReportService) {
         this.service = service;
+        this.pdfReportService = pdfReportService;
     }
 
     @GetMapping
@@ -85,5 +91,20 @@ public class OrderServiceController {
     @PutMapping(value = "/{id}/cancel")
     public ResponseEntity<OrderServiceDTO> cancel(@PathVariable Long id) {
         return ResponseEntity.ok(service.cancel(id));
+    }
+
+    @Operation(summary = "Generates the PDF report of a service order")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "PDF generated"),
+            @ApiResponse(responseCode = "404", description = "Service order not found")
+    })
+    @GetMapping(value = "/{id}/report")
+    public ResponseEntity<byte[]> generateReport(@PathVariable Long id) {
+        byte[] pdf = pdfReportService.generateOrderReport(service.findById(id));
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.inline().filename("service-order-" + id + ".pdf").build().toString())
+                .body(pdf);
     }
 }
