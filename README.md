@@ -46,7 +46,7 @@ Run the tests:
 | default | H2 in-memory | Swagger UI enabled, data is reset on restart |
 | `prod` | PostgreSQL | Swagger UI disabled, configured through environment variables |
 
-Run with PostgreSQL. A local database is available through `docker compose up -d`.
+Run with PostgreSQL:
 
 ```bash
 DB_URL=jdbc:postgresql://localhost:5432/service_orders \
