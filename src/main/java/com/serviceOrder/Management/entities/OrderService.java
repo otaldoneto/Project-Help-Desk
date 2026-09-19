@@ -39,11 +39,11 @@ public class OrderService {
     @Column(columnDefinition = "TEXT")
     private String rootCauseReport;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
     private Client client;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "technician_id")
     private Technician technician;
 

@@ -68,13 +68,26 @@ SPRING_PROFILES_ACTIVE=prod \
 | GET    | `/technicians`                       | List technicians                                   |
 | GET    | `/technicians/{id}`                  | Get a technician                                   |
 | POST   | `/technicians`                       | Create a technician                                |
-| GET    | `/orders`                            | List service orders                                |
-| GET    | `/orders/{id}`                       | Get a service order                                |
+| GET | `/orders` | List service orders (paginated: `page`, `size`, `sort`) || GET    | `/orders/{id}`                       | Get a service order                                |
 | POST   | `/orders`                            | Create a service order for a client                |
 | PUT    | `/orders/{id}/assign/{technicianId}` | Assign a technician (status becomes `IN_PROGRESS`) |
 | PUT    | `/orders/{id}/finish`                | Finish an order with a root cause report           |
 | PUT    | `/orders/{id}/cancel`                | Cancel an order                                    |
 | GET    | `/orders/{id}/report`                | Download the order report as PDF                   |
+
+## Pagination
+
+`GET /orders` is paginated. Query parameters: `page` (starts at 0), `size` (default 20, max 100) and `sort` (default `createdAt,desc`).
+
+```json
+{
+  "content": [ { "id": 3, "title": "Order 3", "...": "..." } ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 3,
+  "totalPages": 1
+}
+```
 
 ## Service order lifecycle
 

@@ -14,10 +14,12 @@ import com.serviceOrder.Management.repositories.OrderServiceRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.List;
+
 
 @Service
 public class OrderServiceService {
@@ -34,8 +36,8 @@ public class OrderServiceService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderServiceDTO> findAll() {
-        return repository.findAll().stream().map(OrderServiceDTO::new).toList();
+    public Page<OrderServiceDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(OrderServiceDTO::new);
     }
 
     @Transactional(readOnly = true)

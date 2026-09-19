@@ -22,6 +22,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -74,6 +81,21 @@ class OrderServiceServiceTest {
         when(orderRepository.findById(MISSING_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> orderService.findById(MISSING_ID));
+    }
+
+    // ---------- findAll ----------
+
+    @Test
+    @DisplayName("findAll should return a page of DTOs")
+    void findAllShouldReturnPageOfDtos() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<OrderService> page = new PageImpl<>(List.of(orderWithStatus(OrderStatus.OPEN)), pageable, 1);
+        when(orderRepository.findAll(pageable)).thenReturn(page);
+
+        Page<OrderServiceDTO> result = orderService.findAll(pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(ORDER_ID, result.getContent().get(0).id());
     }
 
     // ---------- create ----------

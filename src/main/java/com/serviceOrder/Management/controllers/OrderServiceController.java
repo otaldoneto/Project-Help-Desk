@@ -16,9 +16,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import com.serviceOrder.Management.dtos.PageResponseDTO;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 
 import java.net.URI;
-import java.util.List;
 
 @Tag(name = "Service Orders", description = "Endpoints to manage the service order lifecycle")
 @RestController
@@ -32,9 +35,12 @@ public class OrderServiceController {
         this.pdfReportService = pdfReportService;
     }
 
+    @Operation(summary = "Lists service orders",
+            description = "Paginated list, newest first. Use the page, size and sort query parameters")
     @GetMapping
-    public ResponseEntity<List<OrderServiceDTO>> findAll() {
-        return ResponseEntity.ok(service.findAll());
+    public ResponseEntity<PageResponseDTO<OrderServiceDTO>> findAll(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(PageResponseDTO.from(service.findAll(pageable)));
     }
 
     @GetMapping(value = "/{id}")

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.core.PropertyReferenceException;
 
 import java.time.Instant;
 import java.util.stream.Collectors;
@@ -60,5 +61,11 @@ public class ResourceExceptionHandler {
     public ResponseEntity<StandardError> dataIntegrity(DataIntegrityViolationException e, HttpServletRequest request) {
         return build(HttpStatus.CONFLICT, "Data conflict",
                 "The request conflicts with existing data, such as a duplicated unique value", request);
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<StandardError> invalidSortProperty(PropertyReferenceException e, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "Invalid parameter",
+                "Invalid sort property: '" + e.getPropertyName() + "'", request);
     }
 }
