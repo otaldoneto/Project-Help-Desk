@@ -3,7 +3,6 @@ package com.serviceOrder.Management.controllers;
 import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.services.TechnicianService;
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;

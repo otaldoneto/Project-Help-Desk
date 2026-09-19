@@ -1,5 +1,6 @@
 package com.serviceOrder.Management.services;
 
+import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
 import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
@@ -11,6 +12,7 @@ import java.util.List;
 @Service
 public class TechnicianService {
     private final TechnicianRepository repository;
+
     public TechnicianService(TechnicianRepository repository) {
         this.repository = repository;
     }
@@ -24,9 +26,10 @@ public class TechnicianService {
     @Transactional(readOnly = true)
     public TechnicianDTO findById(Long id) {
         Technician entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Technician not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Technician not found with id: " + id));
         return new TechnicianDTO(entity);
     }
+
     @Transactional
     public TechnicianDTO insert(TechnicianDTO dto) {
         Technician entity = new Technician();

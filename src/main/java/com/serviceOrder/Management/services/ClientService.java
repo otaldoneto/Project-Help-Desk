@@ -2,6 +2,7 @@ package com.serviceOrder.Management.services;
 
 
 import com.serviceOrder.Management.dtos.ClientDTO;
+import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
 import com.serviceOrder.Management.entities.Client;
 import com.serviceOrder.Management.repositories.ClientRepository;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,11 @@ public class ClientService {
     @Transactional(readOnly = true)
     public ClientDTO findById(Long id) {
         Client entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Client not found with id " + id)) ;
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
         return new ClientDTO(entity);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ClientDTO insert(ClientDTO dto) {
         Client entity = new Client();
         entity.setName(dto.name());
