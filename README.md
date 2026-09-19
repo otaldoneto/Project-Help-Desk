@@ -1,5 +1,7 @@
 # Service Order Management API
 
+[![CI](https://github.com/otaldoneto/Project-Service-Order-Management/actions/workflows/ci.yml/badge.svg)](https://github.com/otaldoneto/Project-Service-Order-Management/actions/workflows/ci.yml)
+
 REST API for managing clients, technicians and service orders (help desk style), built with Spring Boot.
 
 ## Features
@@ -41,10 +43,10 @@ Run the tests:
 
 ## Configuration profiles
 
-| Profile | Database | Notes |
-|---------|----------|-------|
-| default | H2 in-memory | Swagger UI enabled, data is reset on restart |
-| `prod` | PostgreSQL | Swagger UI disabled, configured through environment variables |
+| Profile | Database     | Notes                                                         |
+|---------|--------------|---------------------------------------------------------------|
+| default | H2 in-memory | Swagger UI enabled, data is reset on restart                  |
+| `prod`  | PostgreSQL   | Swagger UI disabled, configured through environment variables |
 
 Run with PostgreSQL:
 
@@ -58,21 +60,21 @@ SPRING_PROFILES_ACTIVE=prod \
 
 ## Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/clients` | List clients |
-| GET | `/clients/{id}` | Get a client |
-| POST | `/clients` | Create a client |
-| GET | `/technicians` | List technicians |
-| GET | `/technicians/{id}` | Get a technician |
-| POST | `/technicians` | Create a technician |
-| GET | `/orders` | List service orders |
-| GET | `/orders/{id}` | Get a service order |
-| POST | `/orders` | Create a service order for a client |
-| PUT | `/orders/{id}/assign/{technicianId}` | Assign a technician (status becomes `IN_PROGRESS`) |
-| PUT | `/orders/{id}/finish` | Finish an order with a root cause report |
-| PUT | `/orders/{id}/cancel` | Cancel an order |
-| GET | `/orders/{id}/report` | Download the order report as PDF |
+| Method | Path                                 | Description                                        |
+|--------|--------------------------------------|----------------------------------------------------|
+| GET    | `/clients`                           | List clients                                       |
+| GET    | `/clients/{id}`                      | Get a client                                       |
+| POST   | `/clients`                           | Create a client                                    |
+| GET    | `/technicians`                       | List technicians                                   |
+| GET    | `/technicians/{id}`                  | Get a technician                                   |
+| POST   | `/technicians`                       | Create a technician                                |
+| GET    | `/orders`                            | List service orders                                |
+| GET    | `/orders/{id}`                       | Get a service order                                |
+| POST   | `/orders`                            | Create a service order for a client                |
+| PUT    | `/orders/{id}/assign/{technicianId}` | Assign a technician (status becomes `IN_PROGRESS`) |
+| PUT    | `/orders/{id}/finish`                | Finish an order with a root cause report           |
+| PUT    | `/orders/{id}/cancel`                | Cancel an order                                    |
+| GET    | `/orders/{id}/report`                | Download the order report as PDF                   |
 
 ## Service order lifecycle
 
@@ -104,11 +106,11 @@ All errors share the same JSON format:
 }
 ```
 
-| Status | When |
-|--------|------|
-| 400 | Invalid input, malformed JSON or invalid parameter |
-| 404 | Resource not found |
-| 409 | Status transition not allowed |
+| Status | When                                               |
+|--------|----------------------------------------------------|
+| 400    | Invalid input, malformed JSON or invalid parameter |
+| 404    | Resource not found                                 |
+| 409    | Status transition not allowed                      |
 
 ## License
 
