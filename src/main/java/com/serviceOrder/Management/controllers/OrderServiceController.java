@@ -16,7 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-@Tag(name = "Ordens de Serviço", description = "Endpoints para gerenciamento do ciclo de vida das OS")
+@Tag(name = "Service Orders", description = "Endpoints to manage the service order lifecycle")
 @RestController
 @RequestMapping(value = "/orders")
 public class OrderServiceController {
@@ -36,11 +36,11 @@ public class OrderServiceController {
         return ResponseEntity.ok(service.findById(id));
     }
 
-    @Operation(summary = "Cria uma nova ordem de serviço", description = "Registra uma nova OS associada a um cliente")
+    @Operation(summary = "Creates a service order", description = "Registers a new service order for a client")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Ordem de serviço criada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
-            @ApiResponse(responseCode = "404", description = "Client não encontrado")
+            @ApiResponse(responseCode = "201", description = "Service order created"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "Client not found")
     })
     @PostMapping
     public ResponseEntity<OrderServiceDTO> create(@Valid @RequestBody OrderServiceCreateDTO dto) {
@@ -50,28 +50,40 @@ public class OrderServiceController {
         return ResponseEntity.created(uri).body(createdDto);
     }
 
-    @Operation(summary = "Atribui um técnico á ordem de serviço",
-            description = "Vincula um técnico e altera o status para IN_PROGRESS")
+    @Operation(summary = "Assigns a technician to a service order",
+            description = "Links a technician and sets the status to IN_PROGRESS (allowed from OPEN or IN_PROGRESS)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Técnico atribuído com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Ordem de serviço ou Técnico não encontrado")
+            @ApiResponse(responseCode = "200", description = "Technician assigned"),
+            @ApiResponse(responseCode = "404", description = "Service order or technician not found"),
+            @ApiResponse(responseCode = "409", description = "Order status does not allow assignment")
     })
     @PutMapping(value = "/{id}/assign/{technicianId}")
     public ResponseEntity<OrderServiceDTO> assignTechnician(@PathVariable Long id, @PathVariable Long technicianId) {
-        OrderServiceDTO dto = service.assignTechnician(id, technicianId);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(service.assignTechnician(id, technicianId));
     }
 
-    @Operation(summary = "Finaliza uma ordem de serviço", description = "Registra o laudo técnico e altera o status para FINISHED")
+    @Operation(summary = "Finishes a service order",
+            description = "Stores the root cause report and sets the status to FINISHED (allowed only from IN_PROGRESS)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Ordem de serviço finalizada com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada"),
-            @ApiResponse(responseCode = "422", description = "Erro de validação (laudo técnico obrigatório)"),
+            @ApiResponse(responseCode = "200", description = "Service order finished"),
+            @ApiResponse(responseCode = "400", description = "Root cause report is required"),
+            @ApiResponse(responseCode = "404", description = "Service order not found"),
+            @ApiResponse(responseCode = "409", description = "Order status does not allow finishing")
     })
     @PutMapping(value = "/{id}/finish")
     public ResponseEntity<OrderServiceDTO> finish(@PathVariable Long id, @Valid @RequestBody OrderServiceFinishDTO dto) {
-        OrderServiceDTO finishedDto = service.finish(id, dto);
-        return ResponseEntity.ok(finishedDto);
+        return ResponseEntity.ok(service.finish(id, dto));
     }
 
+    @Operation(summary = "Cancels a service order",
+            description = "Sets the status to CANCELED (allowed from OPEN or IN_PROGRESS)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Service order canceled"),
+            @ApiResponse(responseCode = "404", description = "Service order not found"),
+            @ApiResponse(responseCode = "409", description = "Order status does not allow cancellation")
+    })
+    @PutMapping(value = "/{id}/cancel")
+    public ResponseEntity<OrderServiceDTO> cancel(@PathVariable Long id) {
+        return ResponseEntity.ok(service.cancel(id));
+    }
 }

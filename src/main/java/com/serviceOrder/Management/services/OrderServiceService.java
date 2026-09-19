@@ -1,5 +1,6 @@
 package com.serviceOrder.Management.services;
 
+import com.serviceOrder.Management.controllers.exceptions.BusinessRuleException;
 import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
 import com.serviceOrder.Management.dtos.OrderServiceCreateDTO;
 import com.serviceOrder.Management.dtos.OrderServiceDTO;
@@ -11,11 +12,11 @@ import com.serviceOrder.Management.enums.OrderStatus;
 import com.serviceOrder.Management.repositories.ClientRepository;
 import com.serviceOrder.Management.repositories.OrderServiceRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -39,22 +40,22 @@ public class OrderServiceService {
 
     @Transactional(readOnly = true)
     public OrderServiceDTO findById(Long id) {
-        OrderService entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Service Order not found with id " + id));
-        return new OrderServiceDTO(entity);
+        return new OrderServiceDTO(findOrder(id));
     }
 
     @Transactional
     public OrderServiceDTO create(OrderServiceCreateDTO dto) {
         Client client = clientRepository.findById(dto.clientId())
-                .orElseThrow(() -> new RuntimeException("Service Order not found with id: " + dto.clientId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + dto.clientId()));
         OrderService entity = new OrderService(null, dto.title(), dto.description(), dto.priority(), client);
         entity = repository.save(entity);
         return new OrderServiceDTO(entity);
     }
+
     @Transactional
     public OrderServiceDTO assignTechnician(Long orderId, Long technicianId) {
-        OrderService entity = repository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Service Order not found with id: " + orderId));
+        OrderService entity = findOrder(orderId);
+        ensureStatusIn(entity, "assign a technician to", OrderStatus.OPEN, OrderStatus.IN_PROGRESS);
         Technician technician = technicianRepository.findById(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician not found with id: " + technicianId));
         entity.setTechnician(technician);
@@ -62,22 +63,37 @@ public class OrderServiceService {
         entity = repository.save(entity);
         return new OrderServiceDTO(entity);
     }
+
     @Transactional
     public OrderServiceDTO finish(Long orderId, OrderServiceFinishDTO dto) {
-        OrderService entity = repository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Service Order not found with id: " + orderId));
-        //Business Rule: A root cause analysis report is mandatory to close the work order.
-        if(dto.rootCauseReport() == null || dto.rootCauseReport().trim().isEmpty()) {
-            throw new IllegalArgumentException("Cannot finish a Service Order without a root cause report");
-        }
-
+        OrderService entity = findOrder(orderId);
+        ensureStatusIn(entity, "finish", OrderStatus.IN_PROGRESS);
         entity.setRootCauseReport(dto.rootCauseReport());
         entity.setStatus(OrderStatus.FINISHED);
         entity.setFinishedAt(Instant.now());
-
         entity = repository.save(entity);
         return new OrderServiceDTO(entity);
     }
 
+    @Transactional
+    public OrderServiceDTO cancel(Long orderId) {
+        OrderService entity = findOrder(orderId);
+        ensureStatusIn(entity, "cancel", OrderStatus.OPEN, OrderStatus.IN_PROGRESS);
+        entity.setStatus(OrderStatus.CANCELED);
+        entity = repository.save(entity);
+        return new OrderServiceDTO(entity);
+    }
 
+    private OrderService findOrder(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Service Order not found with id: " + id));
+    }
+
+    // Allowed transitions: OPEN -> IN_PROGRESS -> FINISHED, and OPEN/IN_PROGRESS -> CANCELED.
+    private void ensureStatusIn(OrderService order, String action, OrderStatus... allowed) {
+        if (!Arrays.asList(allowed).contains(order.getStatus())) {
+            throw new BusinessRuleException(
+                    "Cannot " + action + " a service order with status " + order.getStatus());
+        }
+    }
 }
