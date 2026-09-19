@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.Instant;
 import java.util.stream.Collectors;
@@ -53,5 +54,11 @@ public class ResourceExceptionHandler {
                                                 HttpServletRequest request) {
         StandardError err = new StandardError(Instant.now(), status.value(), error, message, request.getRequestURI());
         return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<StandardError> dataIntegrity(DataIntegrityViolationException e, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, "Data conflict",
+                "The request conflicts with existing data, such as a duplicated unique value", request);
     }
 }

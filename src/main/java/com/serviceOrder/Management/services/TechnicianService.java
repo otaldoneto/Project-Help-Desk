@@ -1,5 +1,6 @@
 package com.serviceOrder.Management.services;
 
+import com.serviceOrder.Management.controllers.exceptions.BusinessRuleException;
 import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
 import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.entities.Technician;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class TechnicianService {
@@ -32,9 +34,15 @@ public class TechnicianService {
 
     @Transactional
     public TechnicianDTO insert(TechnicianDTO dto) {
+        String email = dto.email().trim().toLowerCase(Locale.ROOT);
+
+        if (repository.existsByEmail(email)) {
+            throw new BusinessRuleException("A technician with this email already exists");
+        }
+
         Technician entity = new Technician();
         entity.setName(dto.name());
-        entity.setEmail(dto.email());
+        entity.setEmail(email);
         entity.setSpecialty(dto.specialty());
         entity = repository.save(entity);
         return new TechnicianDTO(entity);

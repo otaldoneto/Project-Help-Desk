@@ -21,6 +21,8 @@ public class Client {
     @EqualsAndHashCode.Include
     private Long id;
     private String name;
+    @Column(nullable = false, unique = true)
     private String email;
+    @Column(nullable = false, unique = true)
     private String cpfOrCnpj;
 }

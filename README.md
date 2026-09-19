@@ -110,7 +110,7 @@ All errors share the same JSON format:
 |--------|----------------------------------------------------|
 | 400    | Invalid input, malformed JSON or invalid parameter |
 | 404    | Resource not found                                 |
-| 409    | Status transition not allowed                      |
+| 409 | Status transition not allowed, or duplicated email / CPF/CNPJ |
 
 ## License
 
