@@ -11,8 +11,8 @@
 	<groupId>com.serviceOrder</groupId>
 	<artifactId>Management</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>Service Order Management</name>
+	<description>REST API to manage clients, technicians and service orders</description>
 	<url/>
 	<licenses>
 		<license/>
