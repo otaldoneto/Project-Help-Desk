@@ -32,6 +32,22 @@ REST API for managing clients, technicians and service orders (help desk style),
 
 Requirements: JDK 25.
 
+## Run with Docker
+
+Everything (API and PostgreSQL) starts with one command:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Edit `.env` to change the passwords and the JWT secret. The API runs on `http://localhost:8080`, and Swagger UI is available when `SWAGGER_ENABLED=true`.
+
+To start only the database (for example, to run the application from your IDE):
+
+```bash
+docker compose up -d --wait db
+```
 ```bash
 ./mvnw spring-boot:run
 ```
@@ -53,7 +69,7 @@ Run the tests:
 | default | H2 in-memory | Swagger UI enabled, data is reset on restart                                                                                           |
 | `prod`  | PostgreSQL   | Schema managed by Flyway migrations (`src/main/resources/db/migration`), Swagger UI disabled, configured through environment variables |
 
-Run with PostgreSQL. A local database is available through `docker compose up -d --wait`.
+Run with PostgreSQL. A local database is available through `docker compose up -d --wait db`.
 
 ```bash
 DB_URL=jdbc:postgresql://localhost:5432/service_orders \

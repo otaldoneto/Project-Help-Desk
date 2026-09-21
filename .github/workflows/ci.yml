@@ -63,3 +63,34 @@ jobs:
 
       - name: Run tests against PostgreSQL
         run: ./mvnw -B test
+
+  docker-smoke-test:
+    name: Docker smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Prepare the environment file
+        run: cp .env.example .env
+
+      - name: Build and start the stack
+        run: docker compose up -d --build
+
+      - name: Wait for the API and log in
+        run: |
+          for i in $(seq 1 40); do
+            if curl -sf -X POST http://localhost:8080/auth/login \
+                 -H 'Content-Type: application/json' \
+                 -d '{"email":"admin@example.com","password":"change-me-admin-password"}' > /dev/null; then
+              echo "The API is up and the admin can log in"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "The API did not become ready"
+          exit 1
+
+      - name: Show the logs when something fails
+        if: failure()
+        run: docker compose logs

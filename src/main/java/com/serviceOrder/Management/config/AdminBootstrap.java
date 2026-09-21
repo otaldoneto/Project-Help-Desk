@@ -34,6 +34,10 @@ public class AdminBootstrap implements ApplicationRunner {
     // Runs once at startup. If the admin already exists nothing changes (the password is not reset).
     @Override
     public void run(ApplicationArguments args) {
+        if (adminEmail == null || adminEmail.isBlank() || adminPassword == null || adminPassword.length() < 8) {
+            throw new IllegalStateException(
+                    "app.admin.email must be set and app.admin.password must have at least 8 characters");
+        }
         String email = adminEmail.trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmail(email)) {
             return;
