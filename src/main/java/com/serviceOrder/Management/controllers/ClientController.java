@@ -2,6 +2,9 @@ package com.serviceOrder.Management.controllers;
 
 import com.serviceOrder.Management.dtos.ClientDTO;
 import com.serviceOrder.Management.services.ClientService;
+import com.serviceOrder.Management.dtos.PageResponseDTO;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -12,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
+
 
 @Tag(name = "Clients", description = "Endpoints to register and query clients")
 @RestController
@@ -24,10 +27,12 @@ public class ClientController {
         this.service = service;
     }
 
-    @Operation(summary = "Lists all clients")
+    @Operation(summary = "Lists clients",
+            description = "Paginated list ordered by name. Use the page, size and sort query parameters")
     @GetMapping
-    public ResponseEntity<List<ClientDTO>> findAll() {
-        return ResponseEntity.ok(service.findAll());
+    public ResponseEntity<PageResponseDTO<ClientDTO>> findAll(
+            @PageableDefault(size = 20, sort = {"name", "id"}) Pageable pageable) {
+        return ResponseEntity.ok(PageResponseDTO.from(service.findAll(pageable)));
     }
 
     @Operation(summary = "Finds a client by id")

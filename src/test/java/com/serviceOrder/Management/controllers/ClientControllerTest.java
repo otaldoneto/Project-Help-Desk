@@ -1,5 +1,6 @@
 package com.serviceOrder.Management.controllers;
 
+import com.serviceOrder.Management.entities.Client;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -69,14 +70,29 @@ class ClientControllerTest extends ApiTestSupport {
     }
 
     @Test
-    @DisplayName("GET /clients should list the saved clients")
-    void findAllShouldReturnClients() throws Exception {
-        saveClient();
+    @DisplayName("GET /clients should return the requested page ordered by name")
+    void findAllShouldReturnRequestedPage() throws Exception {
+        clientRepository.save(new Client(null, "Carla", "carla@mail.com", "11111111111"));
+        clientRepository.save(new Client(null, "Bruno", "bruno@mail.com", "22222222222"));
+        clientRepository.save(new Client(null, "Ana", "ana@mail.com", "33333333333"));
 
-        mockMvc.perform(get("/clients"))
+        mockMvc.perform(get("/clients?size=2&page=0"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].name").value("Acme Ltda"));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].name").value("Ana"))
+                .andExpect(jsonPath("$.content[1].name").value("Bruno"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    @DisplayName("GET /clients should return 400 for an invalid sort property")
+    void findAllShouldReturn400ForInvalidSort() throws Exception {
+        mockMvc.perform(get("/clients?sort=foo"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid sort property: 'foo'"));
     }
 
     @Test

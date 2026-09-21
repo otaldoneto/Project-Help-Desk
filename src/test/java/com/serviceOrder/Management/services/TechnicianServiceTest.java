@@ -6,6 +6,13 @@ import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,5 +64,18 @@ class TechnicianServiceTest {
         when(technicianRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> technicianService.findById(999L));
+    }
+
+    @Test
+    @DisplayName("findAll should return a page of DTOs")
+    void findAllShouldReturnPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Technician technician = new Technician(1L, "Carlos Silva", "carlos@mail.com", "Networking");
+        when(technicianRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(technician), pageable, 1));
+
+        Page<TechnicianDTO> result = technicianService.findAll(pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Carlos Silva", result.getContent().get(0).name());
     }
 }

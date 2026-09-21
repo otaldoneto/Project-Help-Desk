@@ -13,6 +13,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -72,5 +79,18 @@ class ClientServiceTest {
         when(clientRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> clientService.findById(999L));
+    }
+
+    @Test
+    @DisplayName("findAll should return a page of DTOs")
+    void findAllShouldReturnPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Client client = new Client(1L, "Acme Ltda", "acme@mail.com", "12345678000199");
+        when(clientRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(client), pageable, 1));
+
+        Page<ClientDTO> result = clientService.findAll(pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Acme Ltda", result.getContent().get(0).name());
     }
 }

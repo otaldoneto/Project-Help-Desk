@@ -5,10 +5,11 @@ import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundExcept
 import com.serviceOrder.Management.dtos.ClientDTO;
 import com.serviceOrder.Management.entities.Client;
 import com.serviceOrder.Management.repositories.ClientRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -20,9 +21,8 @@ public class ClientService {
     }
 
     @Transactional(readOnly = true)
-    public List<ClientDTO> findAll() {
-        List<Client> list = repository.findAll();
-        return list.stream().map(ClientDTO::new).toList();
+    public Page<ClientDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(ClientDTO::new);
     }
 
     @Transactional(readOnly = true)

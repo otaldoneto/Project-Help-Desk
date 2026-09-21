@@ -63,10 +63,10 @@ SPRING_PROFILES_ACTIVE=prod \
 
 | Method | Path                                 | Description                                             |
 |--------|--------------------------------------|---------------------------------------------------------|
-| GET    | `/clients`                           | List clients                                            |
+| GET    | `/clients`                           | List clients (paginated)                                            |
 | GET    | `/clients/{id}`                      | Get a client                                            |
 | POST   | `/clients`                           | Create a client                                         |
-| GET    | `/technicians`                       | List technicians                                        |
+| GET    | `/technicians`                       | List technicians (paginated)                                          |
 | GET    | `/technicians/{id}`                  | Get a technician                                        |
 | POST   | `/technicians`                       | Create a technician                                     |
 | GET    | `/orders`                            | List service orders (paginated: `page`, `size`, `sort`) || GET    | `/orders/{id}`                       | Get a service order                                |
@@ -78,8 +78,7 @@ SPRING_PROFILES_ACTIVE=prod \
 
 ## Pagination
 
-`GET /orders` is paginated. Query parameters: `page` (starts at 0), `size` (default 20, max 100) and `sort` (default
-`createdAt,desc`).
+`GET /orders`, `GET /clients` and `GET /technicians` are paginated. Query parameters: `page` (starts at 0), `size` (default 20, max 100) and `sort`. Default sort: `createdAt,desc` for orders and `name,asc` for clients and technicians.
 
 ```json
 {

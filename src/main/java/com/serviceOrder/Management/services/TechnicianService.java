@@ -5,10 +5,11 @@ import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundExcept
 import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -20,9 +21,8 @@ public class TechnicianService {
     }
 
     @Transactional(readOnly = true)
-    public List<TechnicianDTO> findAll() {
-        List<Technician> list = repository.findAll();
-        return list.stream().map(TechnicianDTO::new).toList();
+    public Page<TechnicianDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(TechnicianDTO::new);
     }
 
     @Transactional(readOnly = true)

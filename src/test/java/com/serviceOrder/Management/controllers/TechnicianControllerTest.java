@@ -1,5 +1,6 @@
 package com.serviceOrder.Management.controllers;
 
+import com.serviceOrder.Management.entities.Technician;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -58,5 +59,29 @@ class TechnicianControllerTest extends ApiTestSupport {
         mockMvc.perform(get("/technicians/{id}", 999999))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Technician not found with id: 999999"));
+    }
+
+    @Test
+    @DisplayName("GET /technicians should return the requested page ordered by name")
+    void findAllShouldReturnRequestedPage() throws Exception {
+        technicianRepository.save(new Technician(null, "Carla", "carla@mail.com", "Hardware"));
+        technicianRepository.save(new Technician(null, "Bruno", "bruno@mail.com", "Networking"));
+        technicianRepository.save(new Technician(null, "Ana", "ana@mail.com", "Software"));
+
+        mockMvc.perform(get("/technicians?size=2&page=0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].name").value("Ana"))
+                .andExpect(jsonPath("$.content[1].name").value("Bruno"))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    @DisplayName("GET /technicians should return 400 for an invalid sort property")
+    void findAllShouldReturn400ForInvalidSort() throws Exception {
+        mockMvc.perform(get("/technicians?sort=foo"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid sort property: 'foo'"));
     }
 }
