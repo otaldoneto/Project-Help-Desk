@@ -13,6 +13,8 @@ REST API for managing clients, technicians and service orders (help desk style),
 - Consistent JSON error responses
 - Interactive API docs with Swagger UI
 - **CPF/CNPJ validation** (check digits), including the new alphanumeric CNPJ
+- **Optimistic locking** on service orders: two conflicting concurrent updates never overwrite each other silently (the
+  loser gets `409`)
 
 ## Tech stack
 
@@ -133,11 +135,11 @@ All errors share the same JSON format:
 }
 ```
 
-| Status | When                                                                                                                  |
-|--------|-----------------------------------------------------------------------------------------------------------------------|
-| 400    | Invalid input, malformed JSON or invalid parameter                                                                    |
-| 404    | Resource not found                                                                                                    |
-| 409    | Status transition not allowed, duplicated email / CPF/CNPJ, or deleting a client / technician that has service orders |
+| Status | When                                                                                                                                             |
+|--------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| 400    | Invalid input, malformed JSON or invalid parameter                                                                                               |
+| 404    | Resource not found                                                                                                                               |
+| 409    | Status transition not allowed, duplicated email / CPF/CNPJ, deleting a client / technician that has service orders, or a concurrent modification |
 
 ## License
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.core.PropertyReferenceException;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 import java.time.Instant;
 import java.util.stream.Collectors;
@@ -49,6 +50,13 @@ public class ResourceExceptionHandler {
     public ResponseEntity<StandardError> typeMismatch(MethodArgumentTypeMismatchException e, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, "Invalid parameter",
                 "Invalid value '" + e.getValue() + "' for parameter '" + e.getName() + "'", request);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<StandardError> optimisticLock(OptimisticLockingFailureException e,
+                                                        HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, "Concurrent modification",
+                "The resource was modified by another request. Reload it and try again", request);
     }
 
     private ResponseEntity<StandardError> build(HttpStatus status, String error, String message,

@@ -22,6 +22,8 @@ public class OrderService {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
+    @Version
+    private Long version;
     @Column(nullable = false)
     private String title;
 

@@ -1,0 +1,2 @@
+ALTER TABLE tb_order_service ADD COLUMN version BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE tb_order_service ALTER COLUMN version DROP DEFAULT;
