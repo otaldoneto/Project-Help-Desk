@@ -22,25 +22,29 @@ public class OrderService {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
+    @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus status;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderPriority priority;
 
+    @Column(nullable = false)
     private Instant createdAt;
     private Instant finishedAt;
 
     @Column(columnDefinition = "TEXT")
     private String rootCauseReport;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
     @ManyToOne(fetch = FetchType.LAZY)
