@@ -63,7 +63,7 @@ public class ClientController {
     }
 
     @Operation(summary = "Updates a client",
-            description = "Replaces all the fields. Email and CPF/CNPJ must stay unique across clients")
+            description = "Email and CPF/CNPJ must be unique, and the CPF/CNPJ must be valid (an alphanumeric CNPJ is accepted, with upper case letters). The email is stored in lower case and the CPF/CNPJ without separators")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Client updated"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),

@@ -12,6 +12,7 @@ REST API for managing clients, technicians and service orders (help desk style),
 - **PDF report** generation for any service order
 - Consistent JSON error responses
 - Interactive API docs with Swagger UI
+- **CPF/CNPJ validation** (check digits), including the new alphanumeric CNPJ
 
 ## Tech stack
 

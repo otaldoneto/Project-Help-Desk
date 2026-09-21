@@ -24,13 +24,13 @@ class ClientControllerTest extends ApiTestSupport {
         mockMvc.perform(post("/clients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Acme Ltda","email":"Acme@Mail.COM","cpfOrCnpj":"12.345.678/0001-99"}
+                                {"name":"Acme Ltda","email":"Acme@Mail.COM","cpfOrCnpj":"11.222.333/0001-81"}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.email").value("acme@mail.com"))
-                .andExpect(jsonPath("$.cpfOrCnpj").value("12345678000199"));
+                .andExpect(jsonPath("$.cpfOrCnpj").value("11222333000181"));
     }
 
     @Test
@@ -39,7 +39,7 @@ class ClientControllerTest extends ApiTestSupport {
         mockMvc.perform(post("/clients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"","email":"not-an-email","cpfOrCnpj":"12345678000199"}
+                                {"name":"","email":"not-an-email","cpfOrCnpj":"11222333000181"}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation error"))
@@ -54,7 +54,7 @@ class ClientControllerTest extends ApiTestSupport {
         mockMvc.perform(post("/clients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Other","email":"ACME@MAIL.COM","cpfOrCnpj":"99999999000199"}
+                                {"name":"Other","email":"ACME@MAIL.COM","cpfOrCnpj":"11444777000161"}
                                 """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("A client with this email already exists"));
@@ -68,7 +68,7 @@ class ClientControllerTest extends ApiTestSupport {
         mockMvc.perform(post("/clients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Other","email":"other@mail.com","cpfOrCnpj":"12.345.678/0001-99"}
+                                {"name":"Other","email":"other@mail.com","cpfOrCnpj":"11.222.333/0001-81"}
                                 """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("A client with this CPF/CNPJ already exists"));
@@ -128,13 +128,13 @@ class ClientControllerTest extends ApiTestSupport {
         mockMvc.perform(put("/clients/{id}", client.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Acme Corp","email":"Corp@Mail.COM","cpfOrCnpj":"98.765.432/0001-10"}
+                                {"name":"Acme Corp","email":"Corp@Mail.COM","cpfOrCnpj":"45.723.174/0001-10"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(client.getId().intValue()))
                 .andExpect(jsonPath("$.name").value("Acme Corp"))
                 .andExpect(jsonPath("$.email").value("corp@mail.com"))
-                .andExpect(jsonPath("$.cpfOrCnpj").value("98765432000110"));
+                .andExpect(jsonPath("$.cpfOrCnpj").value("45723174000110"));
     }
 
     @Test
@@ -145,7 +145,7 @@ class ClientControllerTest extends ApiTestSupport {
         mockMvc.perform(put("/clients/{id}", client.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Acme Renamed","email":"acme@mail.com","cpfOrCnpj":"12345678000199"}
+                                {"name":"Acme Renamed","email":"acme@mail.com","cpfOrCnpj":"11222333000181"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Acme Renamed"));
@@ -155,12 +155,12 @@ class ClientControllerTest extends ApiTestSupport {
     @DisplayName("PUT /clients/{id} should return 409 when the email belongs to another client")
     void updateShouldReturn409WhenEmailBelongsToAnotherClient() throws Exception {
         saveClient();
-        Client other = clientRepository.save(new Client(null, "Other", "other@mail.com", "99999999000199"));
+        Client other = clientRepository.save(new Client(null, "Other", "other@mail.com", "11444777000161"));
 
         mockMvc.perform(put("/clients/{id}", other.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Other","email":"ACME@MAIL.COM","cpfOrCnpj":"99999999000199"}
+                                {"name":"Other","email":"ACME@MAIL.COM","cpfOrCnpj":"11444777000161"}
                                 """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("A client with this email already exists"));
@@ -170,12 +170,12 @@ class ClientControllerTest extends ApiTestSupport {
     @DisplayName("PUT /clients/{id} should return 409 when the CPF/CNPJ belongs to another client")
     void updateShouldReturn409WhenDocumentBelongsToAnotherClient() throws Exception {
         saveClient();
-        Client other = clientRepository.save(new Client(null, "Other", "other@mail.com", "99999999000199"));
+        Client other = clientRepository.save(new Client(null, "Other", "other@mail.com", "11444777000161"));
 
         mockMvc.perform(put("/clients/{id}", other.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Other","email":"other@mail.com","cpfOrCnpj":"12.345.678/0001-99"}
+                                {"name":"Other","email":"other@mail.com","cpfOrCnpj":"11.222.333/0001-81"}
                                 """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("A client with this CPF/CNPJ already exists"));
@@ -187,7 +187,7 @@ class ClientControllerTest extends ApiTestSupport {
         mockMvc.perform(put("/clients/{id}", 999999)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Acme Ltda","email":"acme@mail.com","cpfOrCnpj":"12345678000199"}
+                                {"name":"Acme Ltda","email":"acme@mail.com","cpfOrCnpj":"11222333000181"}
                                 """))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Client not found with id: 999999"));
@@ -221,5 +221,53 @@ class ClientControllerTest extends ApiTestSupport {
     void deleteShouldReturn404() throws Exception {
         mockMvc.perform(delete("/clients/{id}", 999999))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("POST /clients should return 400 when the CPF/CNPJ check digits are wrong")
+    void insertShouldReturn400WhenDocumentIsInvalid() throws Exception {
+        mockMvc.perform(post("/clients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Acme Ltda","email":"acme@mail.com","cpfOrCnpj":"12345678000199"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("cpfOrCnpj: Invalid CPF or CNPJ"));
+    }
+
+    @Test
+    @DisplayName("POST /clients should accept a valid CPF with separators")
+    void insertShouldAcceptValidCpf() throws Exception {
+        mockMvc.perform(post("/clients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Maria Souza","email":"maria@mail.com","cpfOrCnpj":"529.982.247-25"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cpfOrCnpj").value("52998224725"));
+    }
+
+    @Test
+    @DisplayName("POST /clients should accept a valid alphanumeric CNPJ")
+    void insertShouldAcceptAlphanumericCnpj() throws Exception {
+        mockMvc.perform(post("/clients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Nova Empresa","email":"nova@mail.com","cpfOrCnpj":"12.ABC.345/01DE-35"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cpfOrCnpj").value("12ABC34501DE35"));
+    }
+
+    @Test
+    @DisplayName("POST /clients should reject an alphanumeric CNPJ written in lower case")
+    void insertShouldRejectLowerCaseAlphanumericCnpj() throws Exception {
+        mockMvc.perform(post("/clients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Nova Empresa","email":"nova@mail.com","cpfOrCnpj":"12.abc.345/01de-35"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("cpfOrCnpj: Invalid CPF or CNPJ"));
     }
 }

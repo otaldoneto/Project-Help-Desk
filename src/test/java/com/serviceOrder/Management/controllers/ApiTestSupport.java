@@ -43,7 +43,7 @@ abstract class ApiTestSupport {
     }
 
     protected Client saveClient() {
-        return clientRepository.save(new Client(null, "Acme Ltda", "acme@mail.com", "12345678000199"));
+        return clientRepository.save(new Client(null, "Acme Ltda", "acme@mail.com", "11222333000181"));
     }
 
     protected Technician saveTechnician() {
