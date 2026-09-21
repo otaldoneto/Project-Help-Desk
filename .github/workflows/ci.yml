@@ -47,6 +47,9 @@ jobs:
       DB_PASSWORD: postgres
       SPRINGDOC_API_DOCS_ENABLED: "true"
       SPRINGDOC_SWAGGER_UI_ENABLED: "true"
+      JWT_SECRET: ci-only-secret-ci-only-secret-ci-only-secret
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: ci-only-admin-password
     steps:
       - name: Checkout
         uses: actions/checkout@v7

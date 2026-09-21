@@ -59,6 +59,12 @@ public class ResourceExceptionHandler {
                 "The resource was modified by another request. Reload it and try again", request);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<StandardError> invalidCredentials(InvalidCredentialsException e,
+                                                            HttpServletRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, "Unauthorized", e.getMessage(), request);
+    }
+
     private ResponseEntity<StandardError> build(HttpStatus status, String error, String message,
                                                 HttpServletRequest request) {
         StandardError err = new StandardError(Instant.now(), status.value(), error, message, request.getRequestURI());

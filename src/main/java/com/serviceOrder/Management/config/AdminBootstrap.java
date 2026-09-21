@@ -1,0 +1,45 @@
+package com.serviceOrder.Management.config;
+
+import com.serviceOrder.Management.entities.AppUser;
+import com.serviceOrder.Management.enums.UserRole;
+import com.serviceOrder.Management.repositories.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.util.Locale;
+
+@Slf4j
+@Component
+public class AdminBootstrap implements ApplicationRunner {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final String adminEmail;
+    private final String adminPassword;
+
+    public AdminBootstrap(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          @Value("${app.admin.email}") String adminEmail,
+                          @Value("${app.admin.password}") String adminPassword) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.adminEmail = adminEmail;
+        this.adminPassword = adminPassword;
+    }
+
+    // Runs once at startup. If the admin already exists nothing changes (the password is not reset).
+    @Override
+    public void run(ApplicationArguments args) {
+        String email = adminEmail.trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmail(email)) {
+            return;
+        }
+        userRepository.save(new AppUser(null, "Administrator", email,
+                passwordEncoder.encode(adminPassword), UserRole.ADMIN));
+        log.info("Initial administrator created: {}", email);
+    }
+}

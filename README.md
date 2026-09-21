@@ -15,6 +15,7 @@ REST API for managing clients, technicians and service orders (help desk style),
 - **CPF/CNPJ validation** (check digits), including the new alphanumeric CNPJ
 - **Optimistic locking** on service orders: two conflicting concurrent updates never overwrite each other silently (the
   loser gets `409`)
+- **JWT authentication** with two roles (`ADMIN` and `USER`) and BCrypt-hashed passwords
 
 ## Tech stack
 
@@ -58,9 +59,42 @@ Run with PostgreSQL. A local database is available through `docker compose up -d
 DB_URL=jdbc:postgresql://localhost:5432/service_orders \
 DB_USERNAME=postgres \
 DB_PASSWORD=postgres \
+JWT_SECRET=<at-least-32-characters> \
+ADMIN_EMAIL=admin@example.com \
+ADMIN_PASSWORD=<choose-a-strong-password> \
 SPRING_PROFILES_ACTIVE=prod \
 ./mvnw spring-boot:run
 ```
+
+## Authentication and authorization
+
+The API uses stateless **JWT** authentication. Log in to get a token and send it in every request:
+
+```bash
+curl -X POST localhost:8080/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@example.com","password":"admin12345"}'
+```
+
+```bash
+curl localhost:8080/clients -H "Authorization: Bearer <accessToken>"
+```
+
+In Swagger UI, log in through `POST /auth/login`, click **Authorize** and paste the token.
+
+| Role    | Can do                                                                                                       |
+|---------|--------------------------------------------------------------------------------------------------------------|
+| `USER`  | Read everything, create clients, technicians and service orders, move service orders through their lifecycle |
+| `ADMIN` | Everything a `USER` can do, plus update and delete clients and technicians, and create users (`POST /users`) |
+
+`/auth/login`, Swagger UI and the OpenAPI docs are public. Everything else needs a valid token.
+
+**Development defaults:** in the default profile an administrator is created on startup (`admin@example.com` /
+`admin12345`) and the JWT secret has a development value. These defaults exist for local use only. The `prod` profile
+has **no defaults** and refuses to start without `JWT_SECRET`, `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+
+Tokens are signed with HS256, expire after 60 minutes and cannot be revoked before that. Passwords are stored as BCrypt
+hashes.
 
 ## Endpoints
 
@@ -140,6 +174,8 @@ All errors share the same JSON format:
 | 400    | Invalid input, malformed JSON or invalid parameter                                                                                               |
 | 404    | Resource not found                                                                                                                               |
 | 409    | Status transition not allowed, duplicated email / CPF/CNPJ, deleting a client / technician that has service orders, or a concurrent modification |
+| 401    | Missing, invalid or expired token, or wrong email or password on login                                                                           |
+| 403    | The authenticated user does not have the required role                                                                                           |
 
 ## License
 

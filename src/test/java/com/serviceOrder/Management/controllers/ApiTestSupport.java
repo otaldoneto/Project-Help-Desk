@@ -8,6 +8,18 @@ import com.serviceOrder.Management.enums.OrderStatus;
 import com.serviceOrder.Management.repositories.ClientRepository;
 import com.serviceOrder.Management.repositories.OrderServiceRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
+import com.serviceOrder.Management.repositories.UserRepository;
+import org.springframework.security.test.context.support.WithMockUser;
+
+import com.jayway.jsonpath.JsonPath;
+import com.serviceOrder.Management.entities.AppUser;
+import com.serviceOrder.Management.enums.UserRole;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +31,7 @@ import java.time.Instant;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(roles = "ADMIN")
 abstract class ApiTestSupport {
 
     @Autowired
@@ -33,6 +46,12 @@ abstract class ApiTestSupport {
     @Autowired
     protected TechnicianRepository technicianRepository;
 
+    @Autowired
+    protected UserRepository userRepository;
+
+    @Autowired
+    protected PasswordEncoder passwordEncoder;
+
     private long tick = 0;
 
     @BeforeEach
@@ -40,6 +59,7 @@ abstract class ApiTestSupport {
         orderRepository.deleteAll();
         clientRepository.deleteAll();
         technicianRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     protected Client saveClient() {
@@ -56,5 +76,25 @@ abstract class ApiTestSupport {
         order.setStatus(status);
         order.setCreatedAt(Instant.parse("2026-01-01T00:00:00Z").plusSeconds(tick++));
         return orderRepository.save(order);
+    }
+
+    protected AppUser saveUser(String email, String rawPassword, UserRole role) {
+        return userRepository.save(new AppUser(null, "Test User", email, passwordEncoder.encode(rawPassword), role));
+    }
+
+    // Logs in through the real endpoint and returns the JWT
+    protected String loginAndGetToken(String email, String password) throws Exception {
+        String body = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"%s","password":"%s"}
+                                """.formatted(email, password)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.accessToken");
+    }
+
+    protected String bearer(String token) {
+        return "Bearer " + token;
     }
 }
