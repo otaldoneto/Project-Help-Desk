@@ -22,6 +22,7 @@ REST API for managing clients, technicians and service orders (help desk style),
 - OpenPDF 2.0.3
 - Lombok
 - JUnit 5 and Mockito
+- Flyway (database migrations)
 
 ## Getting started
 
@@ -43,12 +44,13 @@ Run the tests:
 
 ## Configuration profiles
 
-| Profile | Database     | Notes                                                         |
-|---------|--------------|---------------------------------------------------------------|
-| default | H2 in-memory | Swagger UI enabled, data is reset on restart                  |
-| `prod`  | PostgreSQL   | Swagger UI disabled, configured through environment variables |
+| Profile | Database     | Notes                                                                                                                                  |
+|---------|--------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| default | H2 in-memory | Swagger UI enabled, data is reset on restart                                                                                           |
+| `prod`  | PostgreSQL   | Schema managed by Flyway migrations (`src/main/resources/db/migration`), Swagger UI disabled, configured through environment variables |
 
 Run with PostgreSQL. A local database is available through `docker compose up -d --wait`.
+
 ```bash
 DB_URL=jdbc:postgresql://localhost:5432/service_orders \
 DB_USERNAME=postgres \
@@ -59,28 +61,35 @@ SPRING_PROFILES_ACTIVE=prod \
 
 ## Endpoints
 
-| Method | Path                                 | Description                                        |
-|--------|--------------------------------------|----------------------------------------------------|
-| GET    | `/clients`                           | List clients                                       |
-| GET    | `/clients/{id}`                      | Get a client                                       |
-| POST   | `/clients`                           | Create a client                                    |
-| GET    | `/technicians`                       | List technicians                                   |
-| GET    | `/technicians/{id}`                  | Get a technician                                   |
-| POST   | `/technicians`                       | Create a technician                                |
-| GET | `/orders` | List service orders (paginated: `page`, `size`, `sort`) || GET    | `/orders/{id}`                       | Get a service order                                |
-| POST   | `/orders`                            | Create a service order for a client                |
-| PUT    | `/orders/{id}/assign/{technicianId}` | Assign a technician (status becomes `IN_PROGRESS`) |
-| PUT    | `/orders/{id}/finish`                | Finish an order with a root cause report           |
-| PUT    | `/orders/{id}/cancel`                | Cancel an order                                    |
-| GET    | `/orders/{id}/report`                | Download the order report as PDF                   |
+| Method | Path                                 | Description                                             |
+|--------|--------------------------------------|---------------------------------------------------------|
+| GET    | `/clients`                           | List clients                                            |
+| GET    | `/clients/{id}`                      | Get a client                                            |
+| POST   | `/clients`                           | Create a client                                         |
+| GET    | `/technicians`                       | List technicians                                        |
+| GET    | `/technicians/{id}`                  | Get a technician                                        |
+| POST   | `/technicians`                       | Create a technician                                     |
+| GET    | `/orders`                            | List service orders (paginated: `page`, `size`, `sort`) || GET    | `/orders/{id}`                       | Get a service order                                |
+| POST   | `/orders`                            | Create a service order for a client                     |
+| PUT    | `/orders/{id}/assign/{technicianId}` | Assign a technician (status becomes `IN_PROGRESS`)      |
+| PUT    | `/orders/{id}/finish`                | Finish an order with a root cause report                |
+| PUT    | `/orders/{id}/cancel`                | Cancel an order                                         |
+| GET    | `/orders/{id}/report`                | Download the order report as PDF                        |
 
 ## Pagination
 
-`GET /orders` is paginated. Query parameters: `page` (starts at 0), `size` (default 20, max 100) and `sort` (default `createdAt,desc`).
+`GET /orders` is paginated. Query parameters: `page` (starts at 0), `size` (default 20, max 100) and `sort` (default
+`createdAt,desc`).
 
 ```json
 {
-  "content": [ { "id": 3, "title": "Order 3", "...": "..." } ],
+  "content": [
+    {
+      "id": 3,
+      "title": "Order 3",
+      "...": "..."
+    }
+  ],
   "page": 0,
   "size": 20,
   "totalElements": 3,
@@ -118,11 +127,11 @@ All errors share the same JSON format:
 }
 ```
 
-| Status | When                                               |
-|--------|----------------------------------------------------|
-| 400    | Invalid input, malformed JSON or invalid parameter |
-| 404    | Resource not found                                 |
-| 409 | Status transition not allowed, or duplicated email / CPF/CNPJ |
+| Status | When                                                          |
+|--------|---------------------------------------------------------------|
+| 400    | Invalid input, malformed JSON or invalid parameter            |
+| 404    | Resource not found                                            |
+| 409    | Status transition not allowed, or duplicated email / CPF/CNPJ |
 
 ## License
 
