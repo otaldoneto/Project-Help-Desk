@@ -4,6 +4,7 @@ import com.serviceOrder.Management.controllers.exceptions.BusinessRuleException;
 import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
 import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.entities.Technician;
+import com.serviceOrder.Management.repositories.OrderServiceRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,9 +16,11 @@ import java.util.Locale;
 @Service
 public class TechnicianService {
     private final TechnicianRepository repository;
+    private final OrderServiceRepository orderRepository;
 
-    public TechnicianService(TechnicianRepository repository) {
+    public TechnicianService(TechnicianRepository repository, OrderServiceRepository orderRepository) {
         this.repository = repository;
+        this.orderRepository = orderRepository;
     }
 
     @Transactional(readOnly = true)
@@ -27,14 +30,13 @@ public class TechnicianService {
 
     @Transactional(readOnly = true)
     public TechnicianDTO findById(Long id) {
-        Technician entity = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Technician not found with id: " + id));
+        Technician entity = findTechnician(id);
         return new TechnicianDTO(entity);
     }
 
     @Transactional
     public TechnicianDTO insert(TechnicianDTO dto) {
-        String email = dto.email().trim().toLowerCase(Locale.ROOT);
+        String email = normalizeEmail(dto.email());
 
         if (repository.existsByEmail(email)) {
             throw new BusinessRuleException("A technician with this email already exists");
@@ -46,5 +48,41 @@ public class TechnicianService {
         entity.setSpecialty(dto.specialty());
         entity = repository.save(entity);
         return new TechnicianDTO(entity);
+    }
+
+    @Transactional
+    public TechnicianDTO update(Long id, TechnicianDTO dto) {
+        Technician entity = findTechnician(id);
+        String email = normalizeEmail(dto.email());
+
+        if (repository.existsByEmailAndIdNot(email, id)) {
+            throw new BusinessRuleException("A technician with this email already exists");
+        }
+
+        entity.setName(dto.name());
+        entity.setEmail(email);
+        entity.setSpecialty(dto.specialty());
+        entity = repository.save(entity);
+        return new TechnicianDTO(entity);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Technician not found with id: " + id);
+        }
+        if (orderRepository.existsByTechnicianId(id)) {
+            throw new BusinessRuleException("Cannot delete a technician that has service orders");
+        }
+        repository.deleteById(id);
+    }
+
+    private Technician findTechnician(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Technician not found with id: " + id));
+    }
+
+    private static String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 }

@@ -61,4 +61,29 @@ public class ClientController {
                 .buildAndExpand(dto.id()).toUri();
         return ResponseEntity.created(uri).body(dto);
     }
+
+    @Operation(summary = "Updates a client",
+            description = "Replaces all the fields. Email and CPF/CNPJ must stay unique across clients")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Client updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "Client not found"),
+            @ApiResponse(responseCode = "409", description = "Email or CPF/CNPJ already registered")
+    })
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<ClientDTO> update(@PathVariable Long id, @Valid @RequestBody ClientDTO dto) {
+        return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @Operation(summary = "Deletes a client", description = "A client that has service orders cannot be deleted")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Client deleted"),
+            @ApiResponse(responseCode = "404", description = "Client not found"),
+            @ApiResponse(responseCode = "409", description = "Client has service orders")
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

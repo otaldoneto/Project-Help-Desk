@@ -9,7 +9,12 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     boolean existsByEmail(String email);
 
-    // Explicit query: a derived "existsByCpfOrCnpj" would be parsed by Spring Data as "cpf OR cnpj".
+    boolean existsByEmailAndIdNot(String email, Long id);
+
+    // Explicit queries: a derived "existsByCpfOrCnpj" would be parsed by Spring Data as "cpf OR cnpj".
     @Query("select count(c) > 0 from Client c where c.cpfOrCnpj = :cpfOrCnpj")
     boolean existsByDocument(@Param("cpfOrCnpj") String cpfOrCnpj);
+
+    @Query("select count(c) > 0 from Client c where c.cpfOrCnpj = :cpfOrCnpj and c.id <> :id")
+    boolean existsByDocumentAndIdNot(@Param("cpfOrCnpj") String cpfOrCnpj, @Param("id") Long id);
 }

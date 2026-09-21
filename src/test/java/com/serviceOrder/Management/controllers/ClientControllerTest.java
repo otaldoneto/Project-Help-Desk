@@ -5,6 +5,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import com.serviceOrder.Management.enums.OrderStatus;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -113,5 +118,108 @@ class ClientControllerTest extends ApiTestSupport {
         mockMvc.perform(get("/clients/{id}", "abc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Invalid value 'abc' for parameter 'id'"));
+    }
+
+    @Test
+    @DisplayName("PUT /clients/{id} should update the client and normalize the data")
+    void updateShouldReturn200() throws Exception {
+        Client client = saveClient();
+
+        mockMvc.perform(put("/clients/{id}", client.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Acme Corp","email":"Corp@Mail.COM","cpfOrCnpj":"98.765.432/0001-10"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(client.getId().intValue()))
+                .andExpect(jsonPath("$.name").value("Acme Corp"))
+                .andExpect(jsonPath("$.email").value("corp@mail.com"))
+                .andExpect(jsonPath("$.cpfOrCnpj").value("98765432000110"));
+    }
+
+    @Test
+    @DisplayName("PUT /clients/{id} should allow keeping the client's own email and CPF/CNPJ")
+    void updateShouldAllowKeepingOwnUniqueValues() throws Exception {
+        Client client = saveClient();
+
+        mockMvc.perform(put("/clients/{id}", client.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Acme Renamed","email":"acme@mail.com","cpfOrCnpj":"12345678000199"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Acme Renamed"));
+    }
+
+    @Test
+    @DisplayName("PUT /clients/{id} should return 409 when the email belongs to another client")
+    void updateShouldReturn409WhenEmailBelongsToAnotherClient() throws Exception {
+        saveClient();
+        Client other = clientRepository.save(new Client(null, "Other", "other@mail.com", "99999999000199"));
+
+        mockMvc.perform(put("/clients/{id}", other.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Other","email":"ACME@MAIL.COM","cpfOrCnpj":"99999999000199"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("A client with this email already exists"));
+    }
+
+    @Test
+    @DisplayName("PUT /clients/{id} should return 409 when the CPF/CNPJ belongs to another client")
+    void updateShouldReturn409WhenDocumentBelongsToAnotherClient() throws Exception {
+        saveClient();
+        Client other = clientRepository.save(new Client(null, "Other", "other@mail.com", "99999999000199"));
+
+        mockMvc.perform(put("/clients/{id}", other.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Other","email":"other@mail.com","cpfOrCnpj":"12.345.678/0001-99"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("A client with this CPF/CNPJ already exists"));
+    }
+
+    @Test
+    @DisplayName("PUT /clients/{id} should return 404 when the client does not exist")
+    void updateShouldReturn404() throws Exception {
+        mockMvc.perform(put("/clients/{id}", 999999)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Acme Ltda","email":"acme@mail.com","cpfOrCnpj":"12345678000199"}
+                                """))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Client not found with id: 999999"));
+    }
+
+    @Test
+    @DisplayName("DELETE /clients/{id} should delete a client without service orders")
+    void deleteShouldReturn204() throws Exception {
+        Client client = saveClient();
+
+        mockMvc.perform(delete("/clients/{id}", client.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/clients/{id}", client.getId()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("DELETE /clients/{id} should return 409 when the client has service orders")
+    void deleteShouldReturn409WhenClientHasOrders() throws Exception {
+        Client client = saveClient();
+        saveOrder(client, "Printer down", OrderStatus.OPEN);
+
+        mockMvc.perform(delete("/clients/{id}", client.getId()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Cannot delete a client that has service orders"));
+    }
+
+    @Test
+    @DisplayName("DELETE /clients/{id} should return 404 when the client does not exist")
+    void deleteShouldReturn404() throws Exception {
+        mockMvc.perform(delete("/clients/{id}", 999999))
+                .andExpect(status().isNotFound());
     }
 }

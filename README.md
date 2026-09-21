@@ -63,22 +63,28 @@ SPRING_PROFILES_ACTIVE=prod \
 
 | Method | Path                                 | Description                                             |
 |--------|--------------------------------------|---------------------------------------------------------|
-| GET    | `/clients`                           | List clients (paginated)                                            |
+| GET    | `/clients`                           | List clients (paginated)                                |
 | GET    | `/clients/{id}`                      | Get a client                                            |
 | POST   | `/clients`                           | Create a client                                         |
-| GET    | `/technicians`                       | List technicians (paginated)                                          |
+| GET    | `/technicians`                       | List technicians (paginated)                            |
 | GET    | `/technicians/{id}`                  | Get a technician                                        |
 | POST   | `/technicians`                       | Create a technician                                     |
-| GET    | `/orders`                            | List service orders (paginated: `page`, `size`, `sort`) || GET    | `/orders/{id}`                       | Get a service order                                |
+| GET    | `/orders`                            | List service orders (paginated: `page`, `size`, `sort`) |
 | POST   | `/orders`                            | Create a service order for a client                     |
+| GET    | `/orders/{id}`                       | Get a service order                                     |
 | PUT    | `/orders/{id}/assign/{technicianId}` | Assign a technician (status becomes `IN_PROGRESS`)      |
 | PUT    | `/orders/{id}/finish`                | Finish an order with a root cause report                |
 | PUT    | `/orders/{id}/cancel`                | Cancel an order                                         |
 | GET    | `/orders/{id}/report`                | Download the order report as PDF                        |
+| PUT    | `/clients/{id}`                      | Update a client                                         |
+| DELETE | `/clients/{id}`                      | Delete a client (409 if it has service orders)          |
+| PUT    | `/technicians/{id}`                  | Update a technician                                     |
+| DELETE | `/technicians/{id}`                  | Delete a technician (409 if it has service orders)      |
 
 ## Pagination
 
-`GET /orders`, `GET /clients` and `GET /technicians` are paginated. Query parameters: `page` (starts at 0), `size` (default 20, max 100) and `sort`. Default sort: `createdAt,desc` for orders and `name,asc` for clients and technicians.
+`GET /orders`, `GET /clients` and `GET /technicians` are paginated. Query parameters: `page` (starts at 0), `size`
+(default 20, max 100) and `sort`. Default sort: `createdAt,desc` for orders and `name,asc` for clients and technicians.
 
 ```json
 {
@@ -126,11 +132,11 @@ All errors share the same JSON format:
 }
 ```
 
-| Status | When                                                          |
-|--------|---------------------------------------------------------------|
-| 400    | Invalid input, malformed JSON or invalid parameter            |
-| 404    | Resource not found                                            |
-| 409    | Status transition not allowed, or duplicated email / CPF/CNPJ |
+| Status | When                                                                                                                  |
+|--------|-----------------------------------------------------------------------------------------------------------------------|
+| 400    | Invalid input, malformed JSON or invalid parameter                                                                    |
+| 404    | Resource not found                                                                                                    |
+| 409    | Status transition not allowed, duplicated email / CPF/CNPJ, or deleting a client / technician that has service orders |
 
 ## License
 

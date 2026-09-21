@@ -60,4 +60,29 @@ public class TechnicianController {
                 .buildAndExpand(dto.id()).toUri();
         return ResponseEntity.created(uri).body(dto);
     }
+
+    @Operation(summary = "Updates a technician",
+            description = "Replaces all the fields. The email must stay unique across technicians")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Technician updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "Technician not found"),
+            @ApiResponse(responseCode = "409", description = "Email already registered")
+    })
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<TechnicianDTO> update(@PathVariable Long id, @Valid @RequestBody TechnicianDTO dto) {
+        return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @Operation(summary = "Deletes a technician", description = "A technician that has service orders cannot be deleted")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Technician deleted"),
+            @ApiResponse(responseCode = "404", description = "Technician not found"),
+            @ApiResponse(responseCode = "409", description = "Technician has service orders")
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

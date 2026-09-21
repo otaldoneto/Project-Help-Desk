@@ -17,4 +17,8 @@ public interface OrderServiceRepository extends JpaRepository<OrderService, Long
     @Override
     @EntityGraph(attributePaths = {"client", "technician"})
     Optional<OrderService> findById(Long id);
+
+    boolean existsByClientId(Long clientId);
+
+    boolean existsByTechnicianId(Long technicianId);
 }

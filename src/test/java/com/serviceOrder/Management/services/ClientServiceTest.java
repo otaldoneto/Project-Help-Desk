@@ -6,6 +6,7 @@ import com.serviceOrder.Management.dtos.ClientDTO;
 import com.serviceOrder.Management.entities.Client;
 import com.serviceOrder.Management.repositories.ClientRepository;
 
+import com.serviceOrder.Management.repositories.OrderServiceRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,9 @@ class ClientServiceTest {
 
     @Mock
     private ClientRepository clientRepository;
+
+    @Mock
+    private OrderServiceRepository orderRepository;
 
     private ClientDTO newClient() {
         return new ClientDTO(null, "Acme Ltda", "acme@mail.com", "12345678000199");
@@ -92,5 +96,76 @@ class ClientServiceTest {
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Acme Ltda", result.getContent().get(0).name());
+    }
+
+    @Test
+    @DisplayName("update should change the data and normalize email and CPF/CNPJ")
+    void updateShouldChangeAndNormalize() {
+        Client existing = new Client(1L, "Acme Ltda", "acme@mail.com", "12345678000199");
+        ClientDTO dto = new ClientDTO(null, "Acme Corp", "Corp@Mail.COM", "98.765.432/0001-10");
+        when(clientRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(clientRepository.existsByEmailAndIdNot("corp@mail.com", 1L)).thenReturn(false);
+        when(clientRepository.existsByDocumentAndIdNot("98765432000110", 1L)).thenReturn(false);
+        when(clientRepository.save(any(Client.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ClientDTO result = clientService.update(1L, dto);
+
+        assertEquals("Acme Corp", result.name());
+        assertEquals("corp@mail.com", result.email());
+        assertEquals("98765432000110", result.cpfOrCnpj());
+    }
+
+    @Test
+    @DisplayName("update should throw BusinessRuleException when the email belongs to another client")
+    void updateShouldThrowWhenEmailBelongsToAnotherClient() {
+        Client existing = new Client(1L, "Acme Ltda", "acme@mail.com", "12345678000199");
+        when(clientRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(clientRepository.existsByEmailAndIdNot("other@mail.com", 1L)).thenReturn(true);
+
+        ClientDTO dto = new ClientDTO(null, "Acme Ltda", "other@mail.com", "12345678000199");
+
+        assertThrows(BusinessRuleException.class, () -> clientService.update(1L, dto));
+        verify(clientRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("update should throw ResourceNotFoundException when the client does not exist")
+    void updateShouldThrowWhenNotFound() {
+        when(clientRepository.findById(999L)).thenReturn(Optional.empty());
+
+        ClientDTO dto = new ClientDTO(null, "Acme Ltda", "acme@mail.com", "12345678000199");
+
+        assertThrows(ResourceNotFoundException.class, () -> clientService.update(999L, dto));
+        verify(clientRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("delete should remove a client without service orders")
+    void deleteShouldRemoveClient() {
+        when(clientRepository.existsById(1L)).thenReturn(true);
+        when(orderRepository.existsByClientId(1L)).thenReturn(false);
+
+        clientService.delete(1L);
+
+        verify(clientRepository).deleteById(1L);
+    }
+
+    @Test
+    @DisplayName("delete should throw BusinessRuleException when the client has service orders")
+    void deleteShouldThrowWhenClientHasOrders() {
+        when(clientRepository.existsById(1L)).thenReturn(true);
+        when(orderRepository.existsByClientId(1L)).thenReturn(true);
+
+        assertThrows(BusinessRuleException.class, () -> clientService.delete(1L));
+        verify(clientRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("delete should throw ResourceNotFoundException when the client does not exist")
+    void deleteShouldThrowWhenNotFound() {
+        when(clientRepository.existsById(999L)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class, () -> clientService.delete(999L));
+        verify(clientRepository, never()).deleteById(any());
     }
 }
