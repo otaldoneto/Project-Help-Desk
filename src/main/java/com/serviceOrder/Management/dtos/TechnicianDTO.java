@@ -14,7 +14,7 @@ public record TechnicianDTO(
         @Email(message = "Invalid email format")
         String email,
 
-        @NotBlank(message = "Specialty  is required")
+        @NotBlank(message = "Specialty is required")
         String specialty
 ) {
     public TechnicianDTO(Technician entity) {
