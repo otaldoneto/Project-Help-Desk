@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
 
 jobs:
@@ -22,6 +22,28 @@ jobs:
 
       - name: Run tests
         run: ./mvnw -B test
+               - name: Coverage summary
+               if: success()
+               run: |
+                 python3 - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+                 import csv
+                 lm = lc = bm = bc = 0
+                 with open('target/site/jacoco/jacoco.csv') as f:
+                  for r in csv.DictReader(f):
+                      lm += int(r['LINE_MISSED']); lc += int(r['LINE_COVERED'])
+                      bm += int(r['BRANCH_MISSED']); bc += int(r['BRANCH_COVERED'])
+                 print("### Test coverage")
+                 print(f"- Lines: {100 * lc / (lc + lm):.1f}% ({lc} of {lc + lm})")
+                 print(f"- Branches: {100 * bc / (bc + bm):.1f}% ({bc} of {bc + bm})")
+                 EOF
+
+                 - name: Upload the coverage report
+                   if: always()
+                   uses: actions/upload-artifact@v7
+                   with:
+                     name: coverage-report
+                     path: target/site/jacoco
+                     if-no-files-found: ignore
 
   test-postgres:
     name: Tests (PostgreSQL)

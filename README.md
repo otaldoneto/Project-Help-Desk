@@ -32,6 +32,22 @@ REST API for managing clients, technicians and service orders (help desk style),
 
 Requirements: JDK 25.
 
+Run the application (default profile: in-memory H2 database, Swagger UI enabled):
+
+```bash
+./mvnw spring-boot:run
+```
+
+The API runs on `http://localhost:8080` and the Swagger UI is available at `http://localhost:8080/swagger-ui.html`. Data is reset every time the application restarts.
+
+Run the tests:
+
+```bash
+./mvnw test
+```
+
+The test run also produces a coverage report (JaCoCo) in `target/site/jacoco/index.html`. The build fails if line coverage drops below 90%.
+
 ## Run with Docker
 
 Everything (API and PostgreSQL) starts with one command:
@@ -47,19 +63,6 @@ To start only the database (for example, to run the application from your IDE):
 
 ```bash
 docker compose up -d --wait db
-```
-```bash
-./mvnw spring-boot:run
-```
-
-The API runs on `http://localhost:8080` and the Swagger UI is available at `http://localhost:8080/swagger-ui.html`.
-
-By default the application uses an in-memory H2 database, so data is reset every time it restarts.
-
-Run the tests:
-
-```bash
-./mvnw test
 ```
 
 ## Configuration profiles
