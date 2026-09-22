@@ -21,6 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
+import com.serviceOrder.Management.dtos.OrderFilterDTO;
+import com.serviceOrder.Management.enums.OrderPriority;
+import com.serviceOrder.Management.enums.OrderStatus;
+
 import java.net.URI;
 
 @Tag(name = "Service Orders", description = "Endpoints to manage the service order lifecycle")
@@ -36,11 +40,17 @@ public class OrderServiceController {
     }
 
     @Operation(summary = "Lists service orders",
-            description = "Paginated list, newest first. Use the page, size and sort query parameters")
+            description = "Paginated list, newest first. The filters are optional and combined with AND: status, priority, clientId, technicianId and title (case-insensitive, matches part of the title)")
     @GetMapping
     public ResponseEntity<PageResponseDTO<OrderServiceDTO>> findAll(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) OrderPriority priority,
+            @RequestParam(required = false) Long clientId,
+            @RequestParam(required = false) Long technicianId,
+            @RequestParam(required = false) String title,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(PageResponseDTO.from(service.findAll(pageable)));
+        OrderFilterDTO filter = new OrderFilterDTO(status, priority, clientId, technicianId, title);
+        return ResponseEntity.ok(PageResponseDTO.from(service.findAll(filter, pageable)));
     }
 
     @GetMapping(value = "/{id}")

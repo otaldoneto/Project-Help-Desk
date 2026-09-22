@@ -78,6 +78,12 @@ abstract class ApiTestSupport {
         return orderRepository.save(order);
     }
 
+    protected OrderService saveOrder(Client client, String title, OrderStatus status, OrderPriority priority) {
+        OrderService order = saveOrder(client, title, status);
+        order.setPriority(priority);
+        return orderRepository.save(order);
+    }
+
     protected AppUser saveUser(String email, String rawPassword, UserRole role) {
         return userRepository.save(new AppUser(null, "Test User", email, passwordEncoder.encode(rawPassword), role));
     }

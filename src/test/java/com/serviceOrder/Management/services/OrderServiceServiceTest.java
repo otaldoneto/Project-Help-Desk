@@ -2,6 +2,7 @@ package com.serviceOrder.Management.services;
 
 import com.serviceOrder.Management.controllers.exceptions.BusinessRuleException;
 import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
+import com.serviceOrder.Management.dtos.OrderFilterDTO;
 import com.serviceOrder.Management.dtos.OrderServiceCreateDTO;
 import com.serviceOrder.Management.dtos.OrderServiceDTO;
 import com.serviceOrder.Management.dtos.OrderServiceFinishDTO;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
@@ -90,9 +92,9 @@ class OrderServiceServiceTest {
     void findAllShouldReturnPageOfDtos() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<OrderService> page = new PageImpl<>(List.of(orderWithStatus(OrderStatus.OPEN)), pageable, 1);
-        when(orderRepository.findAll(pageable)).thenReturn(page);
+        when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
 
-        Page<OrderServiceDTO> result = orderService.findAll(pageable);
+        Page<OrderServiceDTO> result = orderService.findAll(new OrderFilterDTO(null, null, null, null, null), pageable);
 
         assertEquals(1, result.getTotalElements());
         assertEquals(ORDER_ID, result.getContent().get(0).id());

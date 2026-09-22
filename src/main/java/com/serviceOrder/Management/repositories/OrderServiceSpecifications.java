@@ -1,0 +1,68 @@
+package com.serviceOrder.Management.repositories;
+
+import com.serviceOrder.Management.dtos.OrderFilterDTO;
+import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.enums.OrderPriority;
+import com.serviceOrder.Management.enums.OrderStatus;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.util.List;
+import java.util.Locale;
+
+public final class OrderServiceSpecifications {
+
+    private OrderServiceSpecifications() {
+    }
+
+    // Combines the filters that were sent with AND; the ones that were not sent do not restrict anything
+    public static Specification<OrderService> from(OrderFilterDTO filter) {
+        return Specification.allOf(List.of(
+                hasStatus(filter.status()),
+                hasPriority(filter.priority()),
+                belongsToClient(filter.clientId()),
+                assignedTo(filter.technicianId()),
+                titleContains(filter.title())
+        ));
+    }
+
+    private static Specification<OrderService> hasStatus(OrderStatus status) {
+        if (status == null) {
+            return Specification.unrestricted();
+        }
+        return (root, query, cb) -> cb.equal(root.get("status"), status);
+    }
+
+    private static Specification<OrderService> hasPriority(OrderPriority priority) {
+        if (priority == null) {
+            return Specification.unrestricted();
+        }
+        return (root, query, cb) -> cb.equal(root.get("priority"), priority);
+    }
+
+    private static Specification<OrderService> belongsToClient(Long clientId) {
+        if (clientId == null) {
+            return Specification.unrestricted();
+        }
+        return (root, query, cb) -> cb.equal(root.get("client").get("id"), clientId);
+    }
+
+    private static Specification<OrderService> assignedTo(Long technicianId) {
+        if (technicianId == null) {
+            return Specification.unrestricted();
+        }
+        return (root, query, cb) -> cb.equal(root.get("technician").get("id"), technicianId);
+    }
+
+    private static Specification<OrderService> titleContains(String title) {
+        if (title == null || title.isBlank()) {
+            return Specification.unrestricted();
+        }
+        String pattern = "%" + escapeLike(title.trim().toLowerCase(Locale.ROOT)) + "%";
+        return (root, query, cb) -> cb.like(cb.lower(root.<String>get("title")), pattern, '\\');
+    }
+
+    // In a LIKE, % and _ are wildcards. Escaping them makes the user's text be searched literally.
+    private static String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+}

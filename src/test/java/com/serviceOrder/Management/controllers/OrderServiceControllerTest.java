@@ -3,6 +3,7 @@ package com.serviceOrder.Management.controllers;
 import com.serviceOrder.Management.entities.Client;
 import com.serviceOrder.Management.entities.OrderService;
 import com.serviceOrder.Management.entities.Technician;
+import com.serviceOrder.Management.enums.OrderPriority;
 import com.serviceOrder.Management.enums.OrderStatus;
 
 import org.junit.jupiter.api.DisplayName;
@@ -274,5 +275,116 @@ class OrderServiceControllerTest extends ApiTestSupport {
         mockMvc.perform(get("/orders/{id}/report", 999999))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Service Order not found with id: 999999"));
+    }
+
+    // ---------- filters ----------
+
+    @Test
+    @DisplayName("GET /orders?status= should return only the orders with that status")
+    void findAllShouldFilterByStatus() throws Exception {
+        Client client = saveClient();
+        saveOrder(client, "Order 1", OrderStatus.OPEN);
+        saveOrder(client, "Order 2", OrderStatus.FINISHED);
+        saveOrder(client, "Order 3", OrderStatus.OPEN);
+
+        mockMvc.perform(get("/orders?status=OPEN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.content[0].status").value("OPEN"))
+                .andExpect(jsonPath("$.content[1].status").value("OPEN"));
+    }
+
+    @Test
+    @DisplayName("GET /orders?priority= should return only the orders with that priority")
+    void findAllShouldFilterByPriority() throws Exception {
+        Client client = saveClient();
+        saveOrder(client, "Urgent order", OrderStatus.OPEN, OrderPriority.HIGH);
+        saveOrder(client, "Calm order", OrderStatus.OPEN, OrderPriority.LOW);
+
+        mockMvc.perform(get("/orders?priority=LOW"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("Calm order"));
+    }
+
+    @Test
+    @DisplayName("GET /orders?clientId= should return only the orders of that client")
+    void findAllShouldFilterByClient() throws Exception {
+        Client client = saveClient();
+        Client other = clientRepository.save(new Client(null, "Other", "other@mail.com", "11444777000161"));
+        saveOrder(client, "Order of the first client", OrderStatus.OPEN);
+        saveOrder(other, "Order of the other client", OrderStatus.OPEN);
+
+        mockMvc.perform(get("/orders").param("clientId", other.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].client.id").value(other.getId().intValue()));
+    }
+
+    @Test
+    @DisplayName("GET /orders?technicianId= should return only the orders assigned to that technician")
+    void findAllShouldFilterByTechnician() throws Exception {
+        Client client = saveClient();
+        Technician technician = saveTechnician();
+        OrderService assigned = saveOrder(client, "Assigned order", OrderStatus.IN_PROGRESS);
+        assigned.setTechnician(technician);
+        orderRepository.save(assigned);
+        saveOrder(client, "Unassigned order", OrderStatus.OPEN);
+
+        mockMvc.perform(get("/orders").param("technicianId", technician.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("Assigned order"));
+    }
+
+    @Test
+    @DisplayName("GET /orders?title= should match part of the title, ignoring case")
+    void findAllShouldFilterByTitleIgnoringCase() throws Exception {
+        Client client = saveClient();
+        saveOrder(client, "Printer down", OrderStatus.OPEN);
+        saveOrder(client, "Network slow", OrderStatus.OPEN);
+
+        mockMvc.perform(get("/orders").param("title", "PRINTER"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("Printer down"));
+    }
+
+    @Test
+    @DisplayName("GET /orders?title= should treat % as a normal character, not as a wildcard")
+    void findAllShouldSearchWildcardsLiterally() throws Exception {
+        Client client = saveClient();
+        saveOrder(client, "100% sure it is broken", OrderStatus.OPEN);
+        saveOrder(client, "Something else", OrderStatus.OPEN);
+
+        mockMvc.perform(get("/orders").param("title", "%"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("100% sure it is broken"));
+    }
+
+    @Test
+    @DisplayName("GET /orders should combine several filters with AND")
+    void findAllShouldCombineFilters() throws Exception {
+        Client client = saveClient();
+        Client other = clientRepository.save(new Client(null, "Other", "other@mail.com", "11444777000161"));
+        saveOrder(client, "Open order of the first client", OrderStatus.OPEN);
+        saveOrder(client, "Finished order of the first client", OrderStatus.FINISHED);
+        saveOrder(other, "Open order of the other client", OrderStatus.OPEN);
+
+        mockMvc.perform(get("/orders")
+                        .param("status", "OPEN")
+                        .param("clientId", client.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("Open order of the first client"));
+    }
+
+    @Test
+    @DisplayName("GET /orders should return 400 when a filter value is not valid")
+    void findAllShouldReturn400ForInvalidStatus() throws Exception {
+        mockMvc.perform(get("/orders?status=FOO"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid value 'FOO' for parameter 'status'"));
     }
 }

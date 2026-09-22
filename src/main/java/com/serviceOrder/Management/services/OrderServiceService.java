@@ -2,6 +2,7 @@ package com.serviceOrder.Management.services;
 
 import com.serviceOrder.Management.controllers.exceptions.BusinessRuleException;
 import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
+import com.serviceOrder.Management.dtos.OrderFilterDTO;
 import com.serviceOrder.Management.dtos.OrderServiceCreateDTO;
 import com.serviceOrder.Management.dtos.OrderServiceDTO;
 import com.serviceOrder.Management.dtos.OrderServiceFinishDTO;
@@ -11,6 +12,7 @@ import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.enums.OrderStatus;
 import com.serviceOrder.Management.repositories.ClientRepository;
 import com.serviceOrder.Management.repositories.OrderServiceRepository;
+import com.serviceOrder.Management.repositories.OrderServiceSpecifications;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,8 +38,8 @@ public class OrderServiceService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderServiceDTO> findAll(Pageable pageable) {
-        return repository.findAll(pageable).map(OrderServiceDTO::new);
+    public Page<OrderServiceDTO> findAll(OrderFilterDTO filter, Pageable pageable) {
+        return repository.findAll(OrderServiceSpecifications.from(filter), pageable).map(OrderServiceDTO::new);
     }
 
     @Transactional(readOnly = true)
