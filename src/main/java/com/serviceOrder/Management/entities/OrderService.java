@@ -1,5 +1,9 @@
 package com.serviceOrder.Management.entities;
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.serviceOrder.Management.enums.OrderPriority;
 import com.serviceOrder.Management.enums.OrderStatus;
 import jakarta.persistence.*;
@@ -10,6 +14,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "tb_order_service")
 @Getter
@@ -41,6 +46,18 @@ public class OrderService {
     @Column(nullable = false)
     private Instant createdAt;
     private Instant finishedAt;
+
+    @CreatedBy
+    @Column(nullable = false)
+    private String createdBy;
+
+    @LastModifiedBy
+    @Column(nullable = false)
+    private String lastModifiedBy;
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    private Instant lastModifiedAt;
 
     @Column(columnDefinition = "TEXT")
     private String rootCauseReport;

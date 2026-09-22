@@ -65,6 +65,9 @@ public class OrderServiceService {
         entity.setTechnician(technician);
         entity.setStatus(OrderStatus.IN_PROGRESS);
         entity = repository.save(entity);
+        // Forces the UPDATE now, so the @PreUpdate auditing listener sets lastModifiedBy/lastModifiedAt
+        // before we read them into the response DTO (an UPDATE is otherwise deferred to the transaction's flush).
+        repository.flush();
         return new OrderServiceDTO(entity);
     }
 
@@ -76,6 +79,7 @@ public class OrderServiceService {
         entity.setStatus(OrderStatus.FINISHED);
         entity.setFinishedAt(Instant.now());
         entity = repository.save(entity);
+        repository.flush();
         return new OrderServiceDTO(entity);
     }
 
@@ -85,6 +89,7 @@ public class OrderServiceService {
         ensureStatusIn(entity, "cancel", OrderStatus.OPEN, OrderStatus.IN_PROGRESS);
         entity.setStatus(OrderStatus.CANCELED);
         entity = repository.save(entity);
+        repository.flush();
         return new OrderServiceDTO(entity);
     }
 

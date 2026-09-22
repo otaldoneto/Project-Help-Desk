@@ -18,7 +18,7 @@ class PdfReportServiceTest {
     @Test
     void shouldGenerateValidPdfBytes() {
         OrderServiceDTO order = new OrderServiceDTO(1L, "Printer down", "Does not print",
-                OrderStatus.OPEN, OrderPriority.HIGH, Instant.now(), null, null, null, null);
+                OrderStatus.OPEN, OrderPriority.HIGH, Instant.now(), null, null, null, null, null, null, null);
 
         byte[] pdf = service.generateOrderReport(order);
 

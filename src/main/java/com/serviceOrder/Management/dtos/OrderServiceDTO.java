@@ -14,6 +14,9 @@ public record OrderServiceDTO(
         OrderPriority priority,
         Instant createdAt,
         Instant finishedAt,
+        String createdBy,
+        String lastModifiedBy,
+        Instant lastModifiedAt,
         String rootCauseReport,
         ClientDTO client,
         TechnicianDTO technician
@@ -27,6 +30,9 @@ public record OrderServiceDTO(
                 entity.getPriority(),
                 entity.getCreatedAt(),
                 entity.getFinishedAt(),
+                entity.getCreatedBy(),
+                entity.getLastModifiedBy(),
+                entity.getLastModifiedAt(),
                 entity.getRootCauseReport(),
                 entity.getClient() != null ? new ClientDTO(entity.getClient()) : null,
                 entity.getTechnician() != null ? new TechnicianDTO(entity.getTechnician()) : null

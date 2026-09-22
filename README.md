@@ -16,6 +16,7 @@ REST API for managing clients, technicians and service orders (help desk style),
 - **Optimistic locking** on service orders: two conflicting concurrent updates never overwrite each other silently (the
   loser gets `409`)
 - **JWT authentication** with two roles (`ADMIN` and `USER`) and BCrypt-hashed passwords
+- **Audit trail** on service orders: every order records who created it and who last changed it (`createdBy`, `lastModifiedBy`, `lastModifiedAt`), taken from the authenticated user's email
 
 ## Tech stack
 
