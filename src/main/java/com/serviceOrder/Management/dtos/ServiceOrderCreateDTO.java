@@ -4,7 +4,7 @@ import com.serviceOrder.Management.enums.OrderPriority;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record OrderServiceCreateDTO(
+public record ServiceOrderCreateDTO(
         @NotBlank(message = "Title is required")
         String title,
 

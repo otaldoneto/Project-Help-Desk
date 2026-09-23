@@ -1,12 +1,12 @@
 package com.serviceOrder.Management.dtos;
 
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 import com.serviceOrder.Management.enums.OrderPriority;
 import com.serviceOrder.Management.enums.OrderStatus;
 
 import java.time.Instant;
 
-public record OrderServiceDTO(
+public record ServiceOrderDTO(
         Long id,
         String title,
         String description,
@@ -21,7 +21,7 @@ public record OrderServiceDTO(
         ClientDTO client,
         TechnicianDTO technician
 ) {
-    public OrderServiceDTO(OrderService entity) {
+    public ServiceOrderDTO(ServiceOrder entity) {
         this(
                 entity.getId(),
                 entity.getTitle(),

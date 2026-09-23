@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 import com.serviceOrder.Management.enums.OrderStatus;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -149,7 +149,7 @@ class TechnicianControllerTest extends ApiTestSupport {
     @DisplayName("DELETE /technicians/{id} should return 409 when the technician has service orders")
     void deleteShouldReturn409WhenTechnicianHasOrders() throws Exception {
         Technician technician = saveTechnician();
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.IN_PROGRESS);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.IN_PROGRESS);
         order.setTechnician(technician);
         orderRepository.save(order);
 

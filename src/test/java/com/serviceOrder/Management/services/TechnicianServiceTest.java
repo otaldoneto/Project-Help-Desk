@@ -4,7 +4,7 @@ import com.serviceOrder.Management.controllers.exceptions.BusinessRuleException;
 import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
 import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.entities.Technician;
-import com.serviceOrder.Management.repositories.OrderServiceRepository;
+import com.serviceOrder.Management.repositories.ServiceOrderRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
 
 import org.springframework.data.domain.Page;
@@ -38,7 +38,7 @@ class TechnicianServiceTest {
     private TechnicianRepository technicianRepository;
 
     @Mock
-    private OrderServiceRepository orderRepository;
+    private ServiceOrderRepository orderRepository;
 
     @Test
     @DisplayName("insert should normalize email before saving")

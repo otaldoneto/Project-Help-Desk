@@ -4,7 +4,7 @@ import com.serviceOrder.Management.controllers.exceptions.BusinessRuleException;
 import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
 import com.serviceOrder.Management.dtos.TechnicianDTO;
 import com.serviceOrder.Management.entities.Technician;
-import com.serviceOrder.Management.repositories.OrderServiceRepository;
+import com.serviceOrder.Management.repositories.ServiceOrderRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +16,9 @@ import java.util.Locale;
 @Service
 public class TechnicianService {
     private final TechnicianRepository repository;
-    private final OrderServiceRepository orderRepository;
+    private final ServiceOrderRepository orderRepository;
 
-    public TechnicianService(TechnicianRepository repository, OrderServiceRepository orderRepository) {
+    public TechnicianService(TechnicianRepository repository, ServiceOrderRepository orderRepository) {
         this.repository = repository;
         this.orderRepository = orderRepository;
     }

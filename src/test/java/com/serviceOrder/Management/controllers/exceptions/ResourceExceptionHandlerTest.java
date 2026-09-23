@@ -1,6 +1,6 @@
 package com.serviceOrder.Management.controllers.exceptions;
 
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class ResourceExceptionHandlerTest {
         MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/orders/1/finish");
 
         ResponseEntity<StandardError> response = new ResourceExceptionHandler()
-                .optimisticLock(new ObjectOptimisticLockingFailureException(OrderService.class, 1L), request);
+                .optimisticLock(new ObjectOptimisticLockingFailureException(ServiceOrder.class, 1L), request);
 
         assertEquals(409, response.getStatusCode().value());
         assertEquals("Concurrent modification", response.getBody().error());

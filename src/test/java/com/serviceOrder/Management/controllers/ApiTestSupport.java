@@ -1,12 +1,12 @@
 package com.serviceOrder.Management.controllers;
 
 import com.serviceOrder.Management.entities.Client;
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.enums.OrderPriority;
 import com.serviceOrder.Management.enums.OrderStatus;
 import com.serviceOrder.Management.repositories.ClientRepository;
-import com.serviceOrder.Management.repositories.OrderServiceRepository;
+import com.serviceOrder.Management.repositories.ServiceOrderRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
 import com.serviceOrder.Management.repositories.RefreshTokenRepository;
 import com.serviceOrder.Management.repositories.UserRepository;
@@ -39,7 +39,7 @@ abstract class ApiTestSupport {
     protected MockMvc mockMvc;
 
     @Autowired
-    protected OrderServiceRepository orderRepository;
+    protected ServiceOrderRepository orderRepository;
 
     @Autowired
     protected ClientRepository clientRepository;
@@ -76,15 +76,15 @@ abstract class ApiTestSupport {
     }
 
     // Each order gets a later createdAt than the previous one, so sorting is deterministic.
-    protected OrderService saveOrder(Client client, String title, OrderStatus status) {
-        OrderService order = new OrderService(null, title, "Does not turn on", OrderPriority.HIGH, client);
+    protected ServiceOrder saveOrder(Client client, String title, OrderStatus status) {
+        ServiceOrder order = new ServiceOrder(null, title, "Does not turn on", OrderPriority.HIGH, client);
         order.setStatus(status);
         order.setCreatedAt(Instant.parse("2026-01-01T00:00:00Z").plusSeconds(tick++));
         return orderRepository.save(order);
     }
 
-    protected OrderService saveOrder(Client client, String title, OrderStatus status, OrderPriority priority) {
-        OrderService order = saveOrder(client, title, status);
+    protected ServiceOrder saveOrder(Client client, String title, OrderStatus status, OrderPriority priority) {
+        ServiceOrder order = saveOrder(client, title, status);
         order.setPriority(priority);
         return orderRepository.save(order);
     }

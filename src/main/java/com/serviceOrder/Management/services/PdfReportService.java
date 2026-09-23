@@ -10,7 +10,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
-import com.serviceOrder.Management.dtos.OrderServiceDTO;
+import com.serviceOrder.Management.dtos.ServiceOrderDTO;
 import org.springframework.stereotype.Service;
 
 import java.awt.Color;
@@ -25,7 +25,7 @@ public class PdfReportService {
     private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault());
 
-    public byte[] generateOrderReport(OrderServiceDTO order) {
+    public byte[] generateOrderReport(ServiceOrderDTO order) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             Document document = new Document(PageSize.A4);

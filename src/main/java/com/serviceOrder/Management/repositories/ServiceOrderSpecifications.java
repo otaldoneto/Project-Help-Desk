@@ -1,7 +1,7 @@
 package com.serviceOrder.Management.repositories;
 
 import com.serviceOrder.Management.dtos.OrderFilterDTO;
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 import com.serviceOrder.Management.enums.OrderPriority;
 import com.serviceOrder.Management.enums.OrderStatus;
 import org.springframework.data.jpa.domain.Specification;
@@ -9,13 +9,13 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.List;
 import java.util.Locale;
 
-public final class OrderServiceSpecifications {
+public final class ServiceOrderSpecifications {
 
-    private OrderServiceSpecifications() {
+    private ServiceOrderSpecifications() {
     }
 
     // Combines the filters that were sent with AND; the ones that were not sent do not restrict anything
-    public static Specification<OrderService> from(OrderFilterDTO filter) {
+    public static Specification<ServiceOrder> from(OrderFilterDTO filter) {
         return Specification.allOf(List.of(
                 hasStatus(filter.status()),
                 hasPriority(filter.priority()),
@@ -25,35 +25,35 @@ public final class OrderServiceSpecifications {
         ));
     }
 
-    private static Specification<OrderService> hasStatus(OrderStatus status) {
+    private static Specification<ServiceOrder> hasStatus(OrderStatus status) {
         if (status == null) {
             return Specification.unrestricted();
         }
         return (root, query, cb) -> cb.equal(root.get("status"), status);
     }
 
-    private static Specification<OrderService> hasPriority(OrderPriority priority) {
+    private static Specification<ServiceOrder> hasPriority(OrderPriority priority) {
         if (priority == null) {
             return Specification.unrestricted();
         }
         return (root, query, cb) -> cb.equal(root.get("priority"), priority);
     }
 
-    private static Specification<OrderService> belongsToClient(Long clientId) {
+    private static Specification<ServiceOrder> belongsToClient(Long clientId) {
         if (clientId == null) {
             return Specification.unrestricted();
         }
         return (root, query, cb) -> cb.equal(root.get("client").get("id"), clientId);
     }
 
-    private static Specification<OrderService> assignedTo(Long technicianId) {
+    private static Specification<ServiceOrder> assignedTo(Long technicianId) {
         if (technicianId == null) {
             return Specification.unrestricted();
         }
         return (root, query, cb) -> cb.equal(root.get("technician").get("id"), technicianId);
     }
 
-    private static Specification<OrderService> titleContains(String title) {
+    private static Specification<ServiceOrder> titleContains(String title) {
         if (title == null || title.isBlank()) {
             return Specification.unrestricted();
         }
