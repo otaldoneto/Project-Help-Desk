@@ -1,6 +1,5 @@
 package com.serviceOrder.Management.services;
 
-import com.serviceOrder.Management.dtos.TokenResponseDTO;
 import com.serviceOrder.Management.entities.AppUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -27,7 +26,7 @@ public class JwtService {
         this.expirationMinutes = expirationMinutes;
     }
 
-    public TokenResponseDTO generateToken(AppUser user) {
+    public String generateAccessToken(AppUser user) {
         Instant now = Instant.now();
 
         // The claims are the token's content. Anyone can read them, so nothing secret goes here.
@@ -40,8 +39,10 @@ public class JwtService {
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
-        String token = encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
+        return encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
+    }
 
-        return new TokenResponseDTO(token, "Bearer", expirationMinutes * 60);
+    public long getExpirationSeconds() {
+        return expirationMinutes * 60;
     }
 }

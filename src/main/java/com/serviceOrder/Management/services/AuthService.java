@@ -21,15 +21,16 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public TokenResponseDTO login(LoginRequestDTO dto) {
         String email = dto.email().trim().toLowerCase(Locale.ROOT);
         Optional<AppUser> user = userRepository.findByEmail(email);
@@ -48,6 +49,6 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
-        return jwtService.generateToken(user.get());
+        return refreshTokenService.issueTokenPair(user.get());
     }
 }
