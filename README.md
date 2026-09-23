@@ -1,6 +1,7 @@
 # Service Order Management API
 
-[![CI](https://github.com/otaldoneto/Project-Service-Order-Management/actions/workflows/ci.yml/badge.svg)](https://github.com/otaldoneto/Project-Service-Order-Management/actions/workflows/ci.yml)
+[![CI](https://github.com/otaldoneto/Project-Help-Desk/actions/workflows/ci.yml/badge.svg)](https://github.com/otaldoneto/Project-Help-Desk/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/otaldoneto/Project-Help-Desk/graph/badge.svg)](https://codecov.io/gh/otaldoneto/Project-Help-Desk)
 
 REST API for managing clients, technicians and service orders (help desk style), built with Spring Boot.
 
