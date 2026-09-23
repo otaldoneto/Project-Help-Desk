@@ -120,6 +120,10 @@ has **no defaults** and refuses to start without `JWT_SECRET`, `ADMIN_EMAIL` and
 Tokens are signed with HS256, expire after 60 minutes and cannot be revoked before that. Passwords are stored as BCrypt
 hashes.
 
+After 5 failed login attempts from the same IP address within 15 minutes, further attempts (even with the correct
+password) are rejected with `429 Too Many Requests` and a `Retry-After` header, until the window passes. A successful
+login resets the counter.
+
 ## Endpoints
 
 | Method | Path                                 | Description                                             |
@@ -205,6 +209,7 @@ All errors share the same JSON format:
 | 409    | Status transition not allowed, duplicated email / CPF/CNPJ, deleting a client / technician that has service orders, or a concurrent modification |
 | 401    | Missing, invalid or expired token, or wrong email or password on login                                                                           |
 | 403    | The authenticated user does not have the required role                                                                                           |
+| 429    | Too many failed login attempts from this IP address                                                                                              |
 
 ## License
 

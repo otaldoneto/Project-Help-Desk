@@ -65,6 +65,15 @@ public class ResourceExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, "Unauthorized", e.getMessage(), request);
     }
 
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<StandardError> tooManyRequests(TooManyRequestsException e, HttpServletRequest request) {
+        StandardError err = new StandardError(Instant.now(), HttpStatus.TOO_MANY_REQUESTS.value(),
+                "Too many requests", e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(e.getRetryAfterSeconds()))
+                .body(err);
+    }
+
     private ResponseEntity<StandardError> build(HttpStatus status, String error, String message,
                                                 HttpServletRequest request) {
         StandardError err = new StandardError(Instant.now(), status.value(), error, message, request.getRequestURI());
