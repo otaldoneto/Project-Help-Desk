@@ -35,4 +35,8 @@ public class AppUser {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
+
+    // A disabled user cannot log in (existing tokens remain valid until they expire, since JWTs are stateless)
+    @Column(nullable = false)
+    private boolean enabled;
 }

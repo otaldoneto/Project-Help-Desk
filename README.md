@@ -16,7 +16,8 @@ REST API for managing clients, technicians and service orders (help desk style),
 - **Optimistic locking** on service orders: two conflicting concurrent updates never overwrite each other silently (the
   loser gets `409`)
 - **JWT authentication** with two roles (`ADMIN` and `USER`) and BCrypt-hashed passwords
-- **Audit trail** on service orders: every order records who created it and who last changed it (`createdBy`, `lastModifiedBy`, `lastModifiedAt`), taken from the authenticated user's email
+- **Audit trail** on service orders: every order records who created it and who last changed it (`createdBy`,
+  `lastModifiedBy`, `lastModifiedAt`), taken from the authenticated user's email
 
 ## Tech stack
 
@@ -39,7 +40,8 @@ Run the application (default profile: in-memory H2 database, Swagger UI enabled)
 ./mvnw spring-boot:run
 ```
 
-The API runs on `http://localhost:8080` and the Swagger UI is available at `http://localhost:8080/swagger-ui.html`. Data is reset every time the application restarts.
+The API runs on `http://localhost:8080` and the Swagger UI is available at `http://localhost:8080/swagger-ui.html`. Data
+is reset every time the application restarts.
 
 Run the tests:
 
@@ -47,7 +49,8 @@ Run the tests:
 ./mvnw test
 ```
 
-The test run also produces a coverage report (JaCoCo) in `target/site/jacoco/index.html`. The build fails if line coverage drops below 90%.
+The test run also produces a coverage report (JaCoCo) in `target/site/jacoco/index.html`. The build fails if line
+coverage drops below 90%.
 
 ## Run with Docker
 
@@ -58,7 +61,8 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Edit `.env` to change the passwords and the JWT secret. The API runs on `http://localhost:8080`, and Swagger UI is available when `SWAGGER_ENABLED=true`.
+Edit `.env` to change the passwords and the JWT secret. The API runs on `http://localhost:8080`, and Swagger UI is
+available when `SWAGGER_ENABLED=true`.
 
 To start only the database (for example, to run the application from your IDE):
 
@@ -137,6 +141,11 @@ hashes.
 | DELETE | `/clients/{id}`                      | Delete a client (409 if it has service orders)          |
 | PUT    | `/technicians/{id}`                  | Update a technician                                     |
 | DELETE | `/technicians/{id}`                  | Delete a technician (409 if it has service orders)      |
+| POST   | `/users`                             | Create a user (ADMIN only)                              |
+| GET    | `/users`                             | List users (ADMIN only, paginated)                      |
+| PUT    | `/users/{id}/disable`                | Disable a user (ADMIN only)                             |
+| PUT    | `/users/{id}/enable`                 | Re-enable a user (ADMIN only)                           |
+| PUT    | `/users/me/password`                 | Change your own password                                |
 
 ## Pagination
 

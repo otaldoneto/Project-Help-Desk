@@ -43,7 +43,7 @@ public class AdminBootstrap implements ApplicationRunner {
             return;
         }
         userRepository.save(new AppUser(null, "Administrator", email,
-                passwordEncoder.encode(adminPassword), UserRole.ADMIN));
+                passwordEncoder.encode(adminPassword), UserRole.ADMIN, true));
         log.info("Initial administrator created: {}", email);
     }
 }

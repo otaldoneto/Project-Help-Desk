@@ -85,7 +85,11 @@ abstract class ApiTestSupport {
     }
 
     protected AppUser saveUser(String email, String rawPassword, UserRole role) {
-        return userRepository.save(new AppUser(null, "Test User", email, passwordEncoder.encode(rawPassword), role));
+        return userRepository.save(new AppUser(null, "Test User", email, passwordEncoder.encode(rawPassword), role, true));
+    }
+
+    protected AppUser saveDisabledUser(String email, String rawPassword, UserRole role) {
+        return userRepository.save(new AppUser(null, "Test User", email, passwordEncoder.encode(rawPassword), role, false));
     }
 
     // Logs in through the real endpoint and returns the JWT
