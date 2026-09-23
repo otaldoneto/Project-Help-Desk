@@ -8,7 +8,7 @@
 		<version>4.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.serviceOrder</groupId>
+	<groupId>com.serviceorder</groupId>
 	<artifactId>Management</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Service Order Management</name>

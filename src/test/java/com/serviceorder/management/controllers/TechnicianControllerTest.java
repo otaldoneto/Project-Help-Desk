@@ -1,0 +1,167 @@
+package com.serviceorder.management.controllers;
+
+import com.serviceorder.management.entities.Technician;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.serviceorder.management.entities.ServiceOrder;
+import com.serviceorder.management.enums.OrderStatus;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+class TechnicianControllerTest extends ApiTestSupport {
+
+    @Test
+    @DisplayName("POST /technicians should create a technician")
+    void insertShouldReturn201() throws Exception {
+        mockMvc.perform(post("/technicians")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Carlos Silva","email":"Carlos@Mail.com","specialty":"Networking"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("Location"))
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.email").value("carlos@mail.com"));
+    }
+
+    @Test
+    @DisplayName("POST /technicians should return 409 when the email already exists")
+    void insertShouldReturn409WhenEmailExists() throws Exception {
+        saveTechnician();
+
+        mockMvc.perform(post("/technicians")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Other","email":"CARLOS@MAIL.COM","specialty":"Hardware"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("A technician with this email already exists"));
+    }
+
+    @Test
+    @DisplayName("POST /technicians should return 400 when a field is missing")
+    void insertShouldReturn400WhenSpecialtyIsMissing() throws Exception {
+        mockMvc.perform(post("/technicians")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Carlos Silva","email":"carlos@mail.com"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("specialty: Specialty is required"));
+    }
+
+    @Test
+    @DisplayName("GET /technicians/{id} should return 404 when the technician does not exist")
+    void findByIdShouldReturn404() throws Exception {
+        mockMvc.perform(get("/technicians/{id}", 999999))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Technician not found with id: 999999"));
+    }
+
+    @Test
+    @DisplayName("GET /technicians should return the requested page ordered by name")
+    void findAllShouldReturnRequestedPage() throws Exception {
+        technicianRepository.save(new Technician(null, "Carla", "carla@mail.com", "Hardware"));
+        technicianRepository.save(new Technician(null, "Bruno", "bruno@mail.com", "Networking"));
+        technicianRepository.save(new Technician(null, "Ana", "ana@mail.com", "Software"));
+
+        mockMvc.perform(get("/technicians?size=2&page=0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].name").value("Ana"))
+                .andExpect(jsonPath("$.content[1].name").value("Bruno"))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    @DisplayName("GET /technicians should return 400 for an invalid sort property")
+    void findAllShouldReturn400ForInvalidSort() throws Exception {
+        mockMvc.perform(get("/technicians?sort=foo"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid sort property: 'foo'"));
+    }
+
+    @Test
+    @DisplayName("PUT /technicians/{id} should update the technician and normalize the email")
+    void updateShouldReturn200() throws Exception {
+        Technician technician = saveTechnician();
+
+        mockMvc.perform(put("/technicians/{id}", technician.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Carlos S.","email":"Carlos.Silva@Mail.COM","specialty":"Hardware"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Carlos S."))
+                .andExpect(jsonPath("$.email").value("carlos.silva@mail.com"))
+                .andExpect(jsonPath("$.specialty").value("Hardware"));
+    }
+
+    @Test
+    @DisplayName("PUT /technicians/{id} should return 409 when the email belongs to another technician")
+    void updateShouldReturn409WhenEmailBelongsToAnotherTechnician() throws Exception {
+        saveTechnician();
+        Technician other = technicianRepository.save(new Technician(null, "Other", "other@mail.com", "Hardware"));
+
+        mockMvc.perform(put("/technicians/{id}", other.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Other","email":"CARLOS@MAIL.COM","specialty":"Hardware"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("A technician with this email already exists"));
+    }
+
+    @Test
+    @DisplayName("PUT /technicians/{id} should return 404 when the technician does not exist")
+    void updateShouldReturn404() throws Exception {
+        mockMvc.perform(put("/technicians/{id}", 999999)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Carlos Silva","email":"carlos@mail.com","specialty":"Networking"}
+                                """))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Technician not found with id: 999999"));
+    }
+
+    @Test
+    @DisplayName("DELETE /technicians/{id} should delete a technician without service orders")
+    void deleteShouldReturn204() throws Exception {
+        Technician technician = saveTechnician();
+
+        mockMvc.perform(delete("/technicians/{id}", technician.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/technicians/{id}", technician.getId()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("DELETE /technicians/{id} should return 409 when the technician has service orders")
+    void deleteShouldReturn409WhenTechnicianHasOrders() throws Exception {
+        Technician technician = saveTechnician();
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.IN_PROGRESS);
+        order.setTechnician(technician);
+        orderRepository.save(order);
+
+        mockMvc.perform(delete("/technicians/{id}", technician.getId()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Cannot delete a technician that has service orders"));
+    }
+
+    @Test
+    @DisplayName("DELETE /technicians/{id} should return 404 when the technician does not exist")
+    void deleteShouldReturn404() throws Exception {
+        mockMvc.perform(delete("/technicians/{id}", 999999))
+                .andExpect(status().isNotFound());
+    }
+}
