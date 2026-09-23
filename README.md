@@ -7,7 +7,7 @@ REST API for managing clients, technicians and service orders (help desk style),
 
 ## Live demo
 
-- API: https://service-order-management-nxil.onrender.com
+- Home page: https://service-order-management-nxil.onrender.com
 - Swagger UI: https://service-order-management-nxil.onrender.com/swagger-ui.html
 
 The demo runs on free tiers ([Render](https://render.com) for the API and [Neon](https://neon.com) for PostgreSQL), so
