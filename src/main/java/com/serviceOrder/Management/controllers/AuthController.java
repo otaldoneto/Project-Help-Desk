@@ -1,5 +1,6 @@
 package com.serviceOrder.Management.controllers;
 
+import com.serviceOrder.Management.config.ClientIpResolver;
 import com.serviceOrder.Management.controllers.exceptions.InvalidCredentialsException;
 import com.serviceOrder.Management.dtos.CurrentUserDTO;
 import com.serviceOrder.Management.dtos.LoginRequestDTO;
@@ -31,12 +32,14 @@ public class AuthController {
     private final AuthService service;
     private final LoginAttemptService loginAttemptService;
     private final RefreshTokenService refreshTokenService;
+    private final ClientIpResolver clientIpResolver;
 
     public AuthController(AuthService service, LoginAttemptService loginAttemptService,
-                          RefreshTokenService refreshTokenService) {
+                          RefreshTokenService refreshTokenService, ClientIpResolver clientIpResolver) {
         this.service = service;
         this.loginAttemptService = loginAttemptService;
         this.refreshTokenService = refreshTokenService;
+        this.clientIpResolver = clientIpResolver;
     }
 
     @Operation(summary = "Logs in",
@@ -54,10 +57,8 @@ public class AuthController {
     @PostMapping(value = "/login")
     public ResponseEntity<TokenResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto,
                                                   HttpServletRequest request) {
-        // Not trusting a client-supplied X-Forwarded-For here, since this app has no trusted reverse
-        // proxy in front of it that would overwrite it: an attacker could otherwise spoof a new IP
-        // on every request and bypass the limit entirely.
-        String clientIp = request.getRemoteAddr();
+        // Client-supplied headers are ignored unless app.client-ip-header names one that a trusted CDN overwrites.
+        String clientIp = clientIpResolver.resolve(request);
         loginAttemptService.checkAllowed(clientIp);
 
         try {

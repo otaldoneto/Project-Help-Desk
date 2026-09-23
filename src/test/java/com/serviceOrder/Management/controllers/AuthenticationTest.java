@@ -28,7 +28,8 @@ class AuthenticationTest extends ApiTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.expiresIn").value(900));    }
+                .andExpect(jsonPath("$.expiresIn").value(900));
+    }
 
     @Test
     @DisplayName("POST /auth/login should return 401 when the password is wrong")
