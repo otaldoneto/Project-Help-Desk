@@ -21,7 +21,7 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class OrderService {
+public class ServiceOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,7 +70,7 @@ public class OrderService {
     @JoinColumn(name = "technician_id")
     private Technician technician;
 
-    public OrderService(Long id, String title, String description, OrderPriority priority, Client client) {
+    public ServiceOrder(Long id, String title, String description, OrderPriority priority, Client client) {
         this.id = id;
         this.title = title;
         this.description = description;

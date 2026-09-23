@@ -1,7 +1,7 @@
 package com.serviceOrder.Management.controllers;
 
 import com.serviceOrder.Management.entities.Client;
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.enums.OrderStatus;
 import com.serviceOrder.Management.enums.UserRole;
@@ -67,7 +67,7 @@ class AuditingTest extends ApiTestSupport {
     @DisplayName("Direct repository saves are also audited using the current authenticated user")
     void directSaveShouldAlsoBeAudited() {
         Client client = saveClient();
-        OrderService order = saveOrder(client, "Printer down", OrderStatus.OPEN);
+        ServiceOrder order = saveOrder(client, "Printer down", OrderStatus.OPEN);
 
         Assertions.assertEquals("user", order.getCreatedBy());
         Assertions.assertEquals("user", order.getLastModifiedBy());

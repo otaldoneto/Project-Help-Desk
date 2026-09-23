@@ -1,7 +1,7 @@
 package com.serviceOrder.Management.controllers;
 
 import com.serviceOrder.Management.entities.Client;
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.enums.OrderPriority;
 import com.serviceOrder.Management.enums.OrderStatus;
@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class OrderServiceControllerTest extends ApiTestSupport {
+class ServiceOrderControllerTest extends ApiTestSupport {
 
     // ---------- create ----------
 
@@ -88,7 +88,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("GET /orders/{id} should return the order with its client")
     void findByIdShouldReturnOrderWithClient() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
 
         mockMvc.perform(get("/orders/{id}", order.getId()))
                 .andExpect(status().isOk())
@@ -153,7 +153,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("PUT /orders/{id}/assign/{technicianId} should move the order to IN_PROGRESS")
     void assignShouldMoveOrderToInProgress() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
         Technician technician = saveTechnician();
 
         mockMvc.perform(put("/orders/{id}/assign/{technicianId}", order.getId(), technician.getId()))
@@ -165,7 +165,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("PUT /orders/{id}/assign/{technicianId} should return 404 when the technician does not exist")
     void assignShouldReturn404WhenTechnicianNotFound() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
 
         mockMvc.perform(put("/orders/{id}/assign/{technicianId}", order.getId(), 999999))
                 .andExpect(status().isNotFound())
@@ -175,7 +175,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("PUT /orders/{id}/assign/{technicianId} should return 409 when the order is FINISHED")
     void assignShouldReturn409WhenOrderIsFinished() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.FINISHED);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.FINISHED);
 
         mockMvc.perform(put("/orders/{id}/assign/{technicianId}", order.getId(), 1))
                 .andExpect(status().isConflict())
@@ -188,7 +188,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("PUT /orders/{id}/finish should store the report and finish an IN_PROGRESS order")
     void finishShouldStoreReport() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.IN_PROGRESS);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.IN_PROGRESS);
 
         mockMvc.perform(put("/orders/{id}/finish", order.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -204,7 +204,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("PUT /orders/{id}/finish should return 409 when the order is still OPEN")
     void finishShouldReturn409WhenOrderIsOpen() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
 
         mockMvc.perform(put("/orders/{id}/finish", order.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -218,7 +218,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("PUT /orders/{id}/finish should return 400 when the report is blank")
     void finishShouldReturn400WhenReportIsBlank() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.IN_PROGRESS);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.IN_PROGRESS);
 
         mockMvc.perform(put("/orders/{id}/finish", order.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -235,7 +235,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("PUT /orders/{id}/cancel should cancel an OPEN order")
     void cancelShouldCancelOpenOrder() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
 
         mockMvc.perform(put("/orders/{id}/cancel", order.getId()))
                 .andExpect(status().isOk())
@@ -245,7 +245,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("PUT /orders/{id}/cancel should return 409 when the order is FINISHED")
     void cancelShouldReturn409WhenOrderIsFinished() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.FINISHED);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.FINISHED);
 
         mockMvc.perform(put("/orders/{id}/cancel", order.getId()))
                 .andExpect(status().isConflict())
@@ -257,7 +257,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     @Test
     @DisplayName("GET /orders/{id}/report should return a PDF")
     void reportShouldReturnPdf() throws Exception {
-        OrderService order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
+        ServiceOrder order = saveOrder(saveClient(), "Printer down", OrderStatus.OPEN);
 
         MvcResult result = mockMvc.perform(get("/orders/{id}/report", order.getId()))
                 .andExpect(status().isOk())
@@ -326,7 +326,7 @@ class OrderServiceControllerTest extends ApiTestSupport {
     void findAllShouldFilterByTechnician() throws Exception {
         Client client = saveClient();
         Technician technician = saveTechnician();
-        OrderService assigned = saveOrder(client, "Assigned order", OrderStatus.IN_PROGRESS);
+        ServiceOrder assigned = saveOrder(client, "Assigned order", OrderStatus.IN_PROGRESS);
         assigned.setTechnician(technician);
         orderRepository.save(assigned);
         saveOrder(client, "Unassigned order", OrderStatus.OPEN);

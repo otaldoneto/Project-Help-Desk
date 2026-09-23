@@ -6,7 +6,7 @@ import com.serviceOrder.Management.dtos.ClientDTO;
 import com.serviceOrder.Management.entities.Client;
 import com.serviceOrder.Management.repositories.ClientRepository;
 
-import com.serviceOrder.Management.repositories.OrderServiceRepository;
+import com.serviceOrder.Management.repositories.ServiceOrderRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +38,7 @@ class ClientServiceTest {
     private ClientRepository clientRepository;
 
     @Mock
-    private OrderServiceRepository orderRepository;
+    private ServiceOrderRepository orderRepository;
 
     private ClientDTO newClient() {
         return new ClientDTO(null, "Acme Ltda", "acme@mail.com", "11222333000181");

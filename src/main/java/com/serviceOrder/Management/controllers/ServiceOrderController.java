@@ -4,10 +4,10 @@ import com.serviceOrder.Management.services.PdfReportService;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import com.serviceOrder.Management.dtos.OrderServiceCreateDTO;
-import com.serviceOrder.Management.dtos.OrderServiceDTO;
-import com.serviceOrder.Management.dtos.OrderServiceFinishDTO;
-import com.serviceOrder.Management.services.OrderServiceService;
+import com.serviceOrder.Management.dtos.ServiceOrderCreateDTO;
+import com.serviceOrder.Management.dtos.ServiceOrderDTO;
+import com.serviceOrder.Management.dtos.ServiceOrderFinishDTO;
+import com.serviceOrder.Management.services.ServiceOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -30,11 +30,11 @@ import java.net.URI;
 @Tag(name = "Service Orders", description = "Endpoints to manage the service order lifecycle")
 @RestController
 @RequestMapping(value = "/orders")
-public class OrderServiceController {
-    private final OrderServiceService service;
+public class ServiceOrderController {
+    private final ServiceOrderService service;
     private final PdfReportService pdfReportService;
 
-    public OrderServiceController(OrderServiceService service, PdfReportService pdfReportService) {
+    public ServiceOrderController(ServiceOrderService service, PdfReportService pdfReportService) {
         this.service = service;
         this.pdfReportService = pdfReportService;
     }
@@ -42,7 +42,7 @@ public class OrderServiceController {
     @Operation(summary = "Lists service orders",
             description = "Paginated list, newest first. The filters are optional and combined with AND: status, priority, clientId, technicianId and title (case-insensitive, matches part of the title)")
     @GetMapping
-    public ResponseEntity<PageResponseDTO<OrderServiceDTO>> findAll(
+    public ResponseEntity<PageResponseDTO<ServiceOrderDTO>> findAll(
             @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) OrderPriority priority,
             @RequestParam(required = false) Long clientId,
@@ -54,7 +54,7 @@ public class OrderServiceController {
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<OrderServiceDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<ServiceOrderDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
@@ -65,8 +65,8 @@ public class OrderServiceController {
             @ApiResponse(responseCode = "404", description = "Client not found")
     })
     @PostMapping
-    public ResponseEntity<OrderServiceDTO> create(@Valid @RequestBody OrderServiceCreateDTO dto) {
-        OrderServiceDTO createdDto = service.create(dto);
+    public ResponseEntity<ServiceOrderDTO> create(@Valid @RequestBody ServiceOrderCreateDTO dto) {
+        ServiceOrderDTO createdDto = service.create(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(createdDto.id()).toUri();
         return ResponseEntity.created(uri).body(createdDto);
@@ -80,7 +80,7 @@ public class OrderServiceController {
             @ApiResponse(responseCode = "409", description = "Order status does not allow assignment")
     })
     @PutMapping(value = "/{id}/assign/{technicianId}")
-    public ResponseEntity<OrderServiceDTO> assignTechnician(@PathVariable Long id, @PathVariable Long technicianId) {
+    public ResponseEntity<ServiceOrderDTO> assignTechnician(@PathVariable Long id, @PathVariable Long technicianId) {
         return ResponseEntity.ok(service.assignTechnician(id, technicianId));
     }
 
@@ -93,7 +93,7 @@ public class OrderServiceController {
             @ApiResponse(responseCode = "409", description = "Order status does not allow finishing")
     })
     @PutMapping(value = "/{id}/finish")
-    public ResponseEntity<OrderServiceDTO> finish(@PathVariable Long id, @Valid @RequestBody OrderServiceFinishDTO dto) {
+    public ResponseEntity<ServiceOrderDTO> finish(@PathVariable Long id, @Valid @RequestBody ServiceOrderFinishDTO dto) {
         return ResponseEntity.ok(service.finish(id, dto));
     }
 
@@ -105,7 +105,7 @@ public class OrderServiceController {
             @ApiResponse(responseCode = "409", description = "Order status does not allow cancellation")
     })
     @PutMapping(value = "/{id}/cancel")
-    public ResponseEntity<OrderServiceDTO> cancel(@PathVariable Long id) {
+    public ResponseEntity<ServiceOrderDTO> cancel(@PathVariable Long id) {
         return ResponseEntity.ok(service.cancel(id));
     }
 

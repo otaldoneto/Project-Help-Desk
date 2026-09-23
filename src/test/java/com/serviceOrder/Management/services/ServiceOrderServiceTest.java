@@ -3,16 +3,16 @@ package com.serviceOrder.Management.services;
 import com.serviceOrder.Management.controllers.exceptions.BusinessRuleException;
 import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundException;
 import com.serviceOrder.Management.dtos.OrderFilterDTO;
-import com.serviceOrder.Management.dtos.OrderServiceCreateDTO;
-import com.serviceOrder.Management.dtos.OrderServiceDTO;
-import com.serviceOrder.Management.dtos.OrderServiceFinishDTO;
+import com.serviceOrder.Management.dtos.ServiceOrderCreateDTO;
+import com.serviceOrder.Management.dtos.ServiceOrderDTO;
+import com.serviceOrder.Management.dtos.ServiceOrderFinishDTO;
 import com.serviceOrder.Management.entities.Client;
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 import com.serviceOrder.Management.entities.Technician;
 import com.serviceOrder.Management.enums.OrderPriority;
 import com.serviceOrder.Management.enums.OrderStatus;
 import com.serviceOrder.Management.repositories.ClientRepository;
-import com.serviceOrder.Management.repositories.OrderServiceRepository;
+import com.serviceOrder.Management.repositories.ServiceOrderRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OrderServiceServiceTest {
+class ServiceOrderServiceTest {
 
     private static final Long ORDER_ID = 1L;
     private static final Long MISSING_ID = 999L;
@@ -48,10 +48,10 @@ class OrderServiceServiceTest {
     private static final Long CLIENT_ID = 1L;
 
     @InjectMocks
-    private OrderServiceService orderService;
+    private ServiceOrderService serviceOrderService;
 
     @Mock
-    private OrderServiceRepository orderRepository;
+    private ServiceOrderRepository orderRepository;
 
     @Mock
     private ClientRepository clientRepository;
@@ -68,8 +68,8 @@ class OrderServiceServiceTest {
         technician.setName("Carlos Silva");
     }
 
-    private OrderService orderWithStatus(OrderStatus status) {
-        OrderService order = new OrderService();
+    private ServiceOrder orderWithStatus(OrderStatus status) {
+        ServiceOrder order = new ServiceOrder();
         order.setId(ORDER_ID);
         order.setStatus(status);
         return order;
@@ -82,7 +82,7 @@ class OrderServiceServiceTest {
     void findByIdShouldThrowWhenNotFound() {
         when(orderRepository.findById(MISSING_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> orderService.findById(MISSING_ID));
+        assertThrows(ResourceNotFoundException.class, () -> serviceOrderService.findById(MISSING_ID));
     }
 
     // ---------- findAll ----------
@@ -91,10 +91,10 @@ class OrderServiceServiceTest {
     @DisplayName("findAll should return a page of DTOs")
     void findAllShouldReturnPageOfDtos() {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<OrderService> page = new PageImpl<>(List.of(orderWithStatus(OrderStatus.OPEN)), pageable, 1);
+        Page<ServiceOrder> page = new PageImpl<>(List.of(orderWithStatus(OrderStatus.OPEN)), pageable, 1);
         when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
 
-        Page<OrderServiceDTO> result = orderService.findAll(new OrderFilterDTO(null, null, null, null, null), pageable);
+        Page<ServiceOrderDTO> result = serviceOrderService.findAll(new OrderFilterDTO(null, null, null, null, null), pageable);
 
         assertEquals(1, result.getTotalElements());
         assertEquals(ORDER_ID, result.getContent().get(0).id());
@@ -106,11 +106,11 @@ class OrderServiceServiceTest {
     @DisplayName("create should open a new order for an existing client")
     void createShouldOpenOrderWhenClientExists() {
         Client client = new Client(CLIENT_ID, "Acme", "acme@mail.com", "12345678900");
-        OrderServiceCreateDTO dto = new OrderServiceCreateDTO("Printer down", "Does not print", OrderPriority.HIGH, CLIENT_ID);
+        ServiceOrderCreateDTO dto = new ServiceOrderCreateDTO("Printer down", "Does not print", OrderPriority.HIGH, CLIENT_ID);
         when(clientRepository.findById(CLIENT_ID)).thenReturn(Optional.of(client));
-        when(orderRepository.save(any(OrderService.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderRepository.save(any(ServiceOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrderServiceDTO result = orderService.create(dto);
+        ServiceOrderDTO result = serviceOrderService.create(dto);
 
         assertEquals(OrderStatus.OPEN, result.status());
         assertEquals(OrderPriority.HIGH, result.priority());
@@ -121,10 +121,10 @@ class OrderServiceServiceTest {
     @Test
     @DisplayName("create should throw ResourceNotFoundException when client does not exist")
     void createShouldThrowWhenClientNotFound() {
-        OrderServiceCreateDTO dto = new OrderServiceCreateDTO("Printer down", "Does not print", OrderPriority.LOW, MISSING_ID);
+        ServiceOrderCreateDTO dto = new ServiceOrderCreateDTO("Printer down", "Does not print", OrderPriority.LOW, MISSING_ID);
         when(clientRepository.findById(MISSING_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> orderService.create(dto));
+        assertThrows(ResourceNotFoundException.class, () -> serviceOrderService.create(dto));
         verify(orderRepository, never()).save(any());
     }
 
@@ -133,12 +133,12 @@ class OrderServiceServiceTest {
     @Test
     @DisplayName("assignTechnician should set technician and status IN_PROGRESS when IDs exist")
     void assignTechnicianShouldUpdateStatusWhenIdsExist() {
-        OrderService order = orderWithStatus(OrderStatus.OPEN);
+        ServiceOrder order = orderWithStatus(OrderStatus.OPEN);
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
         when(technicianRepository.findById(TECH_ID)).thenReturn(Optional.of(technician));
-        when(orderRepository.save(any(OrderService.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderRepository.save(any(ServiceOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrderServiceDTO result = orderService.assignTechnician(ORDER_ID, TECH_ID);
+        ServiceOrderDTO result = serviceOrderService.assignTechnician(ORDER_ID, TECH_ID);
 
         assertNotNull(result);
         assertEquals(OrderStatus.IN_PROGRESS, order.getStatus());
@@ -151,7 +151,7 @@ class OrderServiceServiceTest {
     void assignTechnicianShouldThrowWhenOrderNotFound() {
         when(orderRepository.findById(MISSING_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> orderService.assignTechnician(MISSING_ID, TECH_ID));
+        assertThrows(ResourceNotFoundException.class, () -> serviceOrderService.assignTechnician(MISSING_ID, TECH_ID));
         verify(orderRepository, never()).save(any());
     }
 
@@ -161,7 +161,7 @@ class OrderServiceServiceTest {
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(orderWithStatus(OrderStatus.OPEN)));
         when(technicianRepository.findById(MISSING_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> orderService.assignTechnician(ORDER_ID, MISSING_ID));
+        assertThrows(ResourceNotFoundException.class, () -> serviceOrderService.assignTechnician(ORDER_ID, MISSING_ID));
         verify(orderRepository, never()).save(any());
     }
 
@@ -170,7 +170,7 @@ class OrderServiceServiceTest {
     void assignTechnicianShouldThrowWhenOrderFinished() {
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(orderWithStatus(OrderStatus.FINISHED)));
 
-        assertThrows(BusinessRuleException.class, () -> orderService.assignTechnician(ORDER_ID, TECH_ID));
+        assertThrows(BusinessRuleException.class, () -> serviceOrderService.assignTechnician(ORDER_ID, TECH_ID));
         verify(orderRepository, never()).save(any());
     }
 
@@ -179,11 +179,11 @@ class OrderServiceServiceTest {
     @Test
     @DisplayName("finish should store report and finishedAt when order is IN_PROGRESS")
     void finishShouldCloseOrderWhenInProgress() {
-        OrderService order = orderWithStatus(OrderStatus.IN_PROGRESS);
+        ServiceOrder order = orderWithStatus(OrderStatus.IN_PROGRESS);
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
-        when(orderRepository.save(any(OrderService.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderRepository.save(any(ServiceOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrderServiceDTO result = orderService.finish(ORDER_ID, new OrderServiceFinishDTO("Power supply replaced"));
+        ServiceOrderDTO result = serviceOrderService.finish(ORDER_ID, new ServiceOrderFinishDTO("Power supply replaced"));
 
         assertEquals(OrderStatus.FINISHED, result.status());
         assertEquals("Power supply replaced", result.rootCauseReport());
@@ -196,7 +196,7 @@ class OrderServiceServiceTest {
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(orderWithStatus(OrderStatus.OPEN)));
 
         assertThrows(BusinessRuleException.class,
-                () -> orderService.finish(ORDER_ID, new OrderServiceFinishDTO("report")));
+                () -> serviceOrderService.finish(ORDER_ID, new ServiceOrderFinishDTO("report")));
         verify(orderRepository, never()).save(any());
     }
 
@@ -206,7 +206,7 @@ class OrderServiceServiceTest {
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(orderWithStatus(OrderStatus.FINISHED)));
 
         assertThrows(BusinessRuleException.class,
-                () -> orderService.finish(ORDER_ID, new OrderServiceFinishDTO("report")));
+                () -> serviceOrderService.finish(ORDER_ID, new ServiceOrderFinishDTO("report")));
         verify(orderRepository, never()).save(any());
     }
 
@@ -216,7 +216,7 @@ class OrderServiceServiceTest {
         when(orderRepository.findById(MISSING_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
-                () -> orderService.finish(MISSING_ID, new OrderServiceFinishDTO("report")));
+                () -> serviceOrderService.finish(MISSING_ID, new ServiceOrderFinishDTO("report")));
     }
 
     // ---------- cancel ----------
@@ -224,11 +224,11 @@ class OrderServiceServiceTest {
     @Test
     @DisplayName("cancel should set status CANCELED when order is OPEN")
     void cancelShouldCancelOpenOrder() {
-        OrderService order = orderWithStatus(OrderStatus.OPEN);
+        ServiceOrder order = orderWithStatus(OrderStatus.OPEN);
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
-        when(orderRepository.save(any(OrderService.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderRepository.save(any(ServiceOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrderServiceDTO result = orderService.cancel(ORDER_ID);
+        ServiceOrderDTO result = serviceOrderService.cancel(ORDER_ID);
 
         assertEquals(OrderStatus.CANCELED, result.status());
     }
@@ -238,7 +238,7 @@ class OrderServiceServiceTest {
     void cancelShouldThrowWhenOrderFinished() {
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(orderWithStatus(OrderStatus.FINISHED)));
 
-        assertThrows(BusinessRuleException.class, () -> orderService.cancel(ORDER_ID));
+        assertThrows(BusinessRuleException.class, () -> serviceOrderService.cancel(ORDER_ID));
         verify(orderRepository, never()).save(any());
     }
 }

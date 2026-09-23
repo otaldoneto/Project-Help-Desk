@@ -5,7 +5,7 @@ import com.serviceOrder.Management.controllers.exceptions.ResourceNotFoundExcept
 import com.serviceOrder.Management.dtos.ClientDTO;
 import com.serviceOrder.Management.entities.Client;
 import com.serviceOrder.Management.repositories.ClientRepository;
-import com.serviceOrder.Management.repositories.OrderServiceRepository;
+import com.serviceOrder.Management.repositories.ServiceOrderRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,9 +16,9 @@ import java.util.Locale;
 @Service
 public class ClientService {
     private final ClientRepository repository;
-    private final OrderServiceRepository orderRepository;
+    private final ServiceOrderRepository orderRepository;
 
-    public ClientService(ClientRepository repository, OrderServiceRepository orderRepository) {
+    public ClientService(ClientRepository repository, ServiceOrderRepository orderRepository) {
         this.repository = repository;
         this.orderRepository = orderRepository;
     }

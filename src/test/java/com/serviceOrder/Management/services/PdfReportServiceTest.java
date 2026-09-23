@@ -1,6 +1,6 @@
 package com.serviceOrder.Management.services;
 
-import com.serviceOrder.Management.dtos.OrderServiceDTO;
+import com.serviceOrder.Management.dtos.ServiceOrderDTO;
 import com.serviceOrder.Management.enums.OrderPriority;
 import com.serviceOrder.Management.enums.OrderStatus;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ class PdfReportServiceTest {
 
     @Test
     void shouldGenerateValidPdfBytes() {
-        OrderServiceDTO order = new OrderServiceDTO(1L, "Printer down", "Does not print",
+        ServiceOrderDTO order = new ServiceOrderDTO(1L, "Printer down", "Does not print",
                 OrderStatus.OPEN, OrderPriority.HIGH, Instant.now(), null, null, null, null, null, null, null);
 
         byte[] pdf = service.generateOrderReport(order);

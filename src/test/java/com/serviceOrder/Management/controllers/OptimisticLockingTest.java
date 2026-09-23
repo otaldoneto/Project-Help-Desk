@@ -1,6 +1,6 @@
 package com.serviceOrder.Management.controllers;
 
-import com.serviceOrder.Management.entities.OrderService;
+import com.serviceOrder.Management.entities.ServiceOrder;
 import com.serviceOrder.Management.enums.OrderStatus;
 
 import org.junit.jupiter.api.DisplayName;
@@ -18,8 +18,8 @@ class OptimisticLockingTest extends ApiTestSupport {
         Long id = saveOrder(saveClient(), "Printer down", OrderStatus.IN_PROGRESS).getId();
 
         // Two requests read the same order before either of them writes.
-        OrderService first = orderRepository.findById(id).orElseThrow();
-        OrderService second = orderRepository.findById(id).orElseThrow();
+        ServiceOrder first = orderRepository.findById(id).orElseThrow();
+        ServiceOrder second = orderRepository.findById(id).orElseThrow();
 
         first.setStatus(OrderStatus.CANCELED);
         orderRepository.save(first);
