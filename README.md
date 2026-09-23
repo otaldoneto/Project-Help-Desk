@@ -4,6 +4,16 @@
 
 REST API for managing clients, technicians and service orders (help desk style), built with Spring Boot.
 
+## Live demo
+
+- API: https://service-order-management-nxil.onrender.com
+- Swagger UI: https://service-order-management-nxil.onrender.com/swagger-ui.html
+
+The demo runs on free tiers ([Render](https://render.com) for the API and [Neon](https://neon.com) for PostgreSQL), so
+the API goes to sleep after 15 minutes without traffic and the first request afterwards can take about a minute. The
+administrator credentials are private; to try the API yourself, run it locally (see below), where an administrator is
+created for you.
+
 ## Features
 
 - Endpoints for **clients** and **technicians** with bean validation
@@ -90,6 +100,25 @@ SPRING_PROFILES_ACTIVE=prod \
 ./mvnw spring-boot:run
 ```
 
+## Deploying to Render and Neon
+
+The live demo is a Render **Web Service** built from the `Dockerfile` (Docker runtime, free plan) that connects to a
+Neon PostgreSQL database. Set these environment variables on the service:
+
+| Variable                           | Value                                                                        |
+|------------------------------------|------------------------------------------------------------------------------|
+| `SPRING_PROFILES_ACTIVE`           | `prod`                                                                       |
+| `DB_URL`                           | `jdbc:postgresql://<neon-host>/<database>?sslmode=require` (direct host, not the `-pooler` one) |
+| `DB_USERNAME`, `DB_PASSWORD`       | The database credentials shown by Neon                                       |
+| `JWT_SECRET`                       | A random secret of at least 32 characters                                    |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`    | The initial administrator                                                    |
+| `SPRINGDOC_API_DOCS_ENABLED`, `SPRINGDOC_SWAGGER_UI_ENABLED` | `true` to expose Swagger UI (off by default in `prod`) |
+| `SERVER_FORWARD_HEADERS_STRATEGY`  | `native`, so the application knows it is served over HTTPS behind a proxy    |
+| `APP_CLIENT_IP_HEADER`             | `CF-Connecting-IP`, so the login rate limit sees the visitor's real IP (Render sits behind Cloudflare) |
+
+Render provides the `PORT` variable by itself, and the application listens on it. Leave `APP_CLIENT_IP_HEADER` unset
+anywhere the application is not behind a proxy that overwrites that header, otherwise clients could spoof their IP.
+
 ## Authentication and authorization
 
 The API uses stateless **JWT** authentication. Log in to get a token and send it in every request:
@@ -117,11 +146,10 @@ In Swagger UI, log in through `POST /auth/login`, click **Authorize** and paste 
 `admin12345`) and the JWT secret has a development value. These defaults exist for local use only. The `prod` profile
 has **no defaults** and refuses to start without `JWT_SECRET`, `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
 
-Tokens are signed with HS256, Access tokens are signed with HS256 and expire after 15 minutes. Refresh tokens are opaque random strings, valid for
-7 days, and can be exchanged for a new pair at `POST /auth/refresh` (each exchange rotates the refresh token — the
+Access tokens are signed with HS256 and expire after 15 minutes. Refresh tokens are opaque random strings, valid for
+7 days, and can be exchanged for a new pair at `POST /auth/refresh` (each exchange rotates the refresh token: the
 old one stops working). `POST /auth/logout` revokes a refresh token immediately. Passwords are stored as BCrypt
 hashes.
-
 
 After 5 failed login attempts from the same IP address within 15 minutes, further attempts (even with the correct
 password) are rejected with `429 Too Many Requests` and a `Retry-After` header, until the window passes. A successful
