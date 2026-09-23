@@ -117,8 +117,11 @@ In Swagger UI, log in through `POST /auth/login`, click **Authorize** and paste 
 `admin12345`) and the JWT secret has a development value. These defaults exist for local use only. The `prod` profile
 has **no defaults** and refuses to start without `JWT_SECRET`, `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
 
-Tokens are signed with HS256, expire after 60 minutes and cannot be revoked before that. Passwords are stored as BCrypt
+Tokens are signed with HS256, Access tokens are signed with HS256 and expire after 15 minutes. Refresh tokens are opaque random strings, valid for
+7 days, and can be exchanged for a new pair at `POST /auth/refresh` (each exchange rotates the refresh token — the
+old one stops working). `POST /auth/logout` revokes a refresh token immediately. Passwords are stored as BCrypt
 hashes.
+
 
 After 5 failed login attempts from the same IP address within 15 minutes, further attempts (even with the correct
 password) are rejected with `429 Too Many Requests` and a `Retry-After` header, until the window passes. A successful

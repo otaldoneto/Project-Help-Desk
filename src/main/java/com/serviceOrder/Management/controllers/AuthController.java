@@ -3,9 +3,11 @@ package com.serviceOrder.Management.controllers;
 import com.serviceOrder.Management.controllers.exceptions.InvalidCredentialsException;
 import com.serviceOrder.Management.dtos.CurrentUserDTO;
 import com.serviceOrder.Management.dtos.LoginRequestDTO;
+import com.serviceOrder.Management.dtos.RefreshTokenRequestDTO;
 import com.serviceOrder.Management.dtos.TokenResponseDTO;
 import com.serviceOrder.Management.services.AuthService;
 import com.serviceOrder.Management.services.LoginAttemptService;
+import com.serviceOrder.Management.services.RefreshTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -28,16 +30,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService service;
     private final LoginAttemptService loginAttemptService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthController(AuthService service, LoginAttemptService loginAttemptService) {
+    public AuthController(AuthService service, LoginAttemptService loginAttemptService,
+                          RefreshTokenService refreshTokenService) {
         this.service = service;
         this.loginAttemptService = loginAttemptService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Operation(summary = "Logs in",
-            description = "Returns a JWT. Send it in the header 'Authorization: Bearer <token>'. " +
-                    "After 5 failed attempts from the same IP address within 15 minutes, further attempts are " +
-                    "rejected with 429 until the window passes")
+            description = "Returns an access token (short-lived, send it in the header 'Authorization: Bearer " +
+                    "<token>') and a refresh token (long-lived, use it with POST /auth/refresh to get a new " +
+                    "access token without logging in again). After 5 failed attempts from the same IP address " +
+                    "within 15 minutes, further attempts are rejected with 429 until the window passes")
     @SecurityRequirements
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Login successful"),
@@ -62,6 +68,33 @@ public class AuthController {
             loginAttemptService.recordFailure(clientIp);
             throw e;
         }
+    }
+
+    @Operation(summary = "Gets a new access token using a refresh token",
+            description = "The refresh token used is invalidated (rotated): a new refresh token is returned " +
+                    "along with the new access token, and the old refresh token can no longer be used")
+    @SecurityRequirements
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "New token pair issued"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "401", description = "Invalid, expired or already used refresh token")
+    })
+    @PostMapping(value = "/refresh")
+    public ResponseEntity<TokenResponseDTO> refresh(@Valid @RequestBody RefreshTokenRequestDTO dto) {
+        return ResponseEntity.ok(refreshTokenService.refresh(dto.refreshToken()));
+    }
+
+    @Operation(summary = "Logs out",
+            description = "Invalidates the given refresh token. The current access token remains valid until " +
+                    "it expires, since access tokens cannot be revoked early")
+    @SecurityRequirements
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Logged out")
+    })
+    @PostMapping(value = "/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequestDTO dto) {
+        refreshTokenService.revoke(dto.refreshToken());
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Shows the authenticated user", description = "Email and roles read from the token")

@@ -8,6 +8,7 @@ import com.serviceOrder.Management.enums.OrderStatus;
 import com.serviceOrder.Management.repositories.ClientRepository;
 import com.serviceOrder.Management.repositories.OrderServiceRepository;
 import com.serviceOrder.Management.repositories.TechnicianRepository;
+import com.serviceOrder.Management.repositories.RefreshTokenRepository;
 import com.serviceOrder.Management.repositories.UserRepository;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -50,6 +51,9 @@ abstract class ApiTestSupport {
     protected UserRepository userRepository;
 
     @Autowired
+    protected RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
     protected PasswordEncoder passwordEncoder;
 
     private long tick = 0;
@@ -59,6 +63,7 @@ abstract class ApiTestSupport {
         orderRepository.deleteAll();
         clientRepository.deleteAll();
         technicianRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
     }
 

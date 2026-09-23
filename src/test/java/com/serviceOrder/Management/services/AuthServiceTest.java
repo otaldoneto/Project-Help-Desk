@@ -35,22 +35,24 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private JwtService jwtService;
+    private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private AuthService authService;
 
     @Test
-    @DisplayName("login should return a token when the email and password are correct")
+    @DisplayName("login should return a token pair when the email and password are correct")
     void loginShouldReturnTokenForCorrectCredentials() {
         AppUser user = new AppUser(1L, "Alice", "alice@mail.com",
                 passwordEncoder.encode("password123"), UserRole.USER, true);
         when(userRepository.findByEmail("alice@mail.com")).thenReturn(Optional.of(user));
-        when(jwtService.generateToken(user)).thenReturn(new TokenResponseDTO("token", "Bearer", 3600));
+        when(refreshTokenService.issueTokenPair(user))
+                .thenReturn(new TokenResponseDTO("access-token", "Bearer", 900, "refresh-token"));
 
         TokenResponseDTO result = authService.login(new LoginRequestDTO("alice@mail.com", "password123"));
 
-        assertEquals("token", result.accessToken());
+        assertEquals("access-token", result.accessToken());
+        assertEquals("refresh-token", result.refreshToken());
     }
 
     @Test
