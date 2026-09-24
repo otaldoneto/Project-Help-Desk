@@ -41,10 +41,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.HEAD, "/", "/index.html").permitAll()
                         .requestMatchers("/auth/login", "/auth/refresh", "/auth/logout").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/users/me/password").authenticated()
+                        // The demo account is shared, so a VIEWER must not be able to change its password
+                        .requestMatchers(HttpMethod.PUT, "/users/me/password").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/clients/**", "/technicians/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/clients/**", "/technicians/**").hasRole("ADMIN")
+                        // Any other write needs ADMIN or USER: a VIEWER only gets through with GET below
+                        .requestMatchers(HttpMethod.POST, "/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.PUT, "/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.PATCH, "/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.DELETE, "/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))

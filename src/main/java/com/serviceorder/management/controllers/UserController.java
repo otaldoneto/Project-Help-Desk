@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Users", description = "User administration. Most endpoints are ADMIN only; changing your own password is open to any authenticated user")
+@Tag(name = "Users", description = "User administration. Most endpoints are ADMIN only; changing your own password is open to ADMIN and USER")
 @RestController
 @RequestMapping(value = "/users")
 public class UserController {
@@ -76,11 +76,12 @@ public class UserController {
     }
 
     @Operation(summary = "Changes the authenticated user's own password",
-            description = "Open to any authenticated user, not just ADMIN")
+            description = "Open to ADMIN and USER. A VIEWER (the shared demo account) cannot change its password")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Password changed"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "401", description = "Missing, invalid or expired token, or current password is incorrect")
+            @ApiResponse(responseCode = "401", description = "Missing, invalid or expired token, or current password is incorrect"),
+            @ApiResponse(responseCode = "403", description = "A VIEWER cannot change its password")
     })
     @PutMapping(value = "/me/password")
     public ResponseEntity<Void> changeMyPassword(@AuthenticationPrincipal Jwt jwt,
