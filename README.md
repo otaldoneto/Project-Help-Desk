@@ -26,7 +26,7 @@ created for you.
 - **CPF/CNPJ validation** (check digits), including the new alphanumeric CNPJ
 - **Optimistic locking** on service orders: two conflicting concurrent updates never overwrite each other silently (the
   loser gets `409`)
-- **JWT authentication** with two roles (`ADMIN` and `USER`) and BCrypt-hashed passwords
+- **JWT authentication** with three roles (`ADMIN`, `USER` and the read-only `VIEWER`) and BCrypt-hashed passwords
 - **Audit trail** on service orders: every order records who created it and who last changed it (`createdBy`,
   `lastModifiedBy`, `lastModifiedAt`), taken from the authenticated user's email
 
@@ -136,10 +136,15 @@ curl localhost:8080/clients -H "Authorization: Bearer <accessToken>"
 
 In Swagger UI, log in through `POST /auth/login`, click **Authorize** and paste the token.
 
-| Role    | Can do                                                                                                       |
-|---------|--------------------------------------------------------------------------------------------------------------|
-| `USER`  | Read everything, create clients, technicians and service orders, move service orders through their lifecycle |
-| `ADMIN` | Everything a `USER` can do, plus update and delete clients and technicians, and create users (`POST /users`) |
+| Role     | Can do                                                                                                       |
+|----------|--------------------------------------------------------------------------------------------------------------|
+| `VIEWER` | Read everything and download PDF reports, nothing else. Meant for a shared, public demo account              |
+| `USER`   | Read everything, create clients, technicians and service orders, move service orders through their lifecycle |
+| `ADMIN`  | Everything a `USER` can do, plus update and delete clients and technicians, and create users (`POST /users`) |
+
+A `VIEWER` gets `403` on every write, including changing its own password, so a shared demo account can be handed
+out without anyone being able to change data or lock the others out. To create one, log in as `ADMIN` and call
+`POST /users` with `"role": "VIEWER"`.
 
 `/auth/login`, Swagger UI and the OpenAPI docs are public. Everything else needs a valid token.
 
